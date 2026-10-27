@@ -10,140 +10,353 @@ import io
 # ==========================================
 # CONFIGURAÇÃO DA PÁGINA E DESIGN SYSTEM UI/UX
 # ==========================================
-st.set_page_config(page_title="Diviapp Pro", page_icon="💎", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="Diviapp Pro",
+    page_icon="💎",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-    /* Design Tokens - Paleta Dark Fintech Sofisticada */
-    :root {
-        --bg-main: #0B0F19;
-        --bg-surface: #111827;
-        --bg-card: #1F2937;
-        --bg-card-hover: #374151;
-        --color-primary: #3B82F6;
-        --color-accent: #10B981;
-        --color-accent-hover: #059669;
-        --text-main: #F3F4F6;
-        --text-muted: #9CA3AF;
-        --border-subtle: #374151;
+    /* ==========================================================================
+       DESIGN TOKENS ADAPTATIVOS (MODO CLARO & MODO ESCURO AUTOMÁTICOS)
+       Baseados nas variáveis nativas do Streamlit com fallback seguro e color-mix
+       ========================================================================== */
+    :root, .stApp {
+        --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+        /* Cores de Marca (Fintech Emerald & Royal Indigo) */
+        --brand-primary: #2563EB;
+        --brand-primary-light: #3B82F6;
+        --brand-accent: #10B981;
+        --brand-accent-dark: #059669;
+        --brand-henrique: #2563EB;
+        --brand-camila: #DB2777;
+
+        /* Superfícies e Textos Adaptativos (Claro/Escuro) */
+        --app-bg: var(--background-color, #F8FAFC);
+        --app-surface: var(--secondary-background-color, #F1F5F9);
+        --app-card: color-mix(in srgb, var(--background-color, #FFFFFF) 82%, var(--secondary-background-color, #F1F5F9) 18%);
+        --app-card-hover: color-mix(in srgb, var(--background-color, #FFFFFF) 70%, var(--secondary-background-color, #F1F5F9) 30%);
+        --app-text: var(--text-color, #0F172A);
+        --app-text-muted: color-mix(in srgb, var(--text-color, #0F172A) 64%, var(--background-color, #FFFFFF) 36%);
+        --app-border: color-mix(in srgb, var(--text-color, #0F172A) 12%, var(--background-color, #FFFFFF) 88%);
+        --app-border-strong: color-mix(in srgb, var(--text-color, #0F172A) 22%, var(--background-color, #FFFFFF) 78%);
+
+        /* Cores Semânticas Adaptativas (Alto Contraste em ambos os temas) */
+        --status-ok-text: color-mix(in srgb, #10B981 72%, var(--text-color, #0F172A) 28%);
+        --status-ok-bg: color-mix(in srgb, #10B981 14%, transparent);
+        --status-ok-border: color-mix(in srgb, #10B981 35%, transparent);
+
+        --status-warn-text: color-mix(in srgb, #F59E0B 72%, var(--text-color, #0F172A) 28%);
+        --status-warn-bg: color-mix(in srgb, #F59E0B 14%, transparent);
+        --status-warn-border: color-mix(in srgb, #F59E0B 35%, transparent);
+
+        --status-danger-text: color-mix(in srgb, #EF4444 72%, var(--text-color, #0F172A) 28%);
+        --status-danger-bg: color-mix(in srgb, #EF4444 14%, transparent);
+        --status-danger-border: color-mix(in srgb, #EF4444 35%, transparent);
+
+        /* Geometria e Sombras */
+        --radius-sm: 10px;
         --radius-md: 14px;
-        --radius-lg: 20px;
-        --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        --radius-lg: 18px;
+        --shadow-sm: 0 2px 8px -2px rgba(15, 23, 42, 0.06);
+        --shadow-card: 0 8px 24px -6px rgba(15, 23, 42, 0.08);
+        --shadow-featured: 0 14px 30px -8px rgba(37, 99, 235, 0.28);
     }
 
-    /* Reset Global e Cores do Streamlit */
-    html, body, [class*="css"] {
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
-        background-color: var(--bg-main) !important;
-        color: var(--text-main) !important;
+    /* Tipografia Base sem forçar cores destrutivas em componentes internos */
+    html, body, .stApp {
+        font-family: var(--font-sans) !important;
+        color: var(--app-text);
     }
 
-    .main {
-        background-color: var(--bg-main) !important;
-        padding: 1.5rem 2rem;
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 3rem !important;
+        max-width: 1400px;
     }
 
-    h1, h2, h3, h4, p, span, label {
-        color: var(--text-main) !important;
-    }
-
+    /* Títulos Principais com Identidade Visual Sólida e Legível */
     h1 {
+        font-family: var(--font-sans) !important;
         font-weight: 800 !important;
-        letter-spacing: -0.03em;
-        font-size: 2.1rem !important;
-        background: linear-gradient(135deg, #60A5FA 0%, #34D399 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 0.2rem !important;
+        letter-spacing: -0.03em !important;
+        font-size: 2rem !important;
+        color: var(--app-text) !important;
+        margin-bottom: 0.5rem !important;
+        padding-bottom: 0.35rem;
+        border-bottom: 2px solid color-mix(in srgb, var(--brand-primary) 22%, transparent);
     }
 
-    /* Cards Executivos Modernos */
+    h2, h3, h4, h5 {
+        font-family: var(--font-sans) !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.015em !important;
+        color: var(--app-text) !important;
+    }
+
+    /* ==========================================================================
+       CARDS EXECUTIVOS (PADRÃO E DESTAQUE)
+       ========================================================================== */
     .pro-card {
-        background: var(--bg-surface);
+        background: var(--app-card);
+        color: var(--app-text);
         border-radius: var(--radius-lg);
-        padding: 22px 24px;
-        border: 1px solid var(--border-subtle);
+        padding: 20px 22px;
+        border: 1px solid var(--app-border);
         box-shadow: var(--shadow-card);
-        margin-bottom: 12px;
-        transition: all 0.2s ease;
+        margin-bottom: 14px;
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
     .pro-card:hover {
-        border-color: #4B5563;
+        border-color: color-mix(in srgb, var(--brand-primary) 45%, var(--app-border) 55%);
         transform: translateY(-2px);
     }
+
+    /* Card em Destaque com contraste próprio garantido em qualquer tema */
     .pro-card-dark {
-        background: linear-gradient(135deg, #1E3A8A 0%, #111827 100%);
-        color: white;
+        background: linear-gradient(135deg, #1E3A8A 0%, #0F766E 100%);
+        color: #FFFFFF !important;
         border-radius: var(--radius-lg);
-        padding: 22px 24px;
-        box-shadow: 0 12px 30px -10px rgba(59, 130, 246, 0.3);
-        margin-bottom: 12px;
-        border: 1px solid rgba(59, 130, 246, 0.3);
+        padding: 20px 22px;
+        box-shadow: var(--shadow-featured);
+        margin-bottom: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+    .pro-card-dark:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 34px -8px rgba(15, 118, 110, 0.36);
+    }
+
     .card-label {
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--text-muted);
+        letter-spacing: 0.07em;
+        color: var(--app-text-muted);
         margin-bottom: 8px;
     }
-    .pro-card-dark .card-label { color: #93C5FD; }
+    .pro-card-dark .card-label {
+        color: #BAE6FD !important;
+    }
+
     .card-value {
-        font-size: 1.75rem;
+        font-size: 1.7rem;
         font-weight: 800;
         margin: 0;
         line-height: 1.2;
+        color: var(--app-text);
         font-variant-numeric: tabular-nums;
     }
+    .pro-card-dark .card-value {
+        color: #FFFFFF !important;
+    }
+
     .card-sub {
-        font-size: 0.84rem;
+        font-size: 0.83rem;
         margin-top: 10px;
-        padding-top: 8px;
-        border-top: 1px solid var(--border-subtle);
-        color: var(--text-muted);
+        padding-top: 9px;
+        border-top: 1px solid var(--app-border);
+        color: var(--app-text-muted);
+        line-height: 1.45;
     }
     .pro-card-dark .card-sub {
-        border-top-color: rgba(255, 255, 255, 0.1);
-        color: #E2E8F0;
+        border-top-color: rgba(255, 255, 255, 0.18);
+        color: #F1F5F9 !important;
     }
 
-    /* Badges de Status Modernos */
-    .badge-ok { background: rgba(16, 185, 129, 0.15); color: #34D399; padding: 4px 12px; border-radius: 99px; font-weight: 700; font-size: 0.75rem; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .badge-warn { background: rgba(245, 158, 11, 0.15); color: #FBBF24; padding: 4px 12px; border-radius: 99px; font-weight: 700; font-size: 0.75rem; border: 1px solid rgba(245, 158, 11, 0.3); }
-    .badge-danger { background: rgba(239, 68, 68, 0.15); color: #F87171; padding: 4px 12px; border-radius: 99px; font-weight: 700; font-size: 0.75rem; border: 1px solid rgba(239, 68, 68, 0.3); }
-
-    /* Sidebar Imersiva */
-    div[data-testid="stSidebar"] {
-        background-color: #030712 !important;
-        border-right: 1px solid var(--border-subtle);
+    /* ==========================================================================
+       BADGES E ALERTAS DE VENCIMENTO (ALTO CONTRASTE CLARO/ESCURO)
+       ========================================================================== */
+    .badge-ok {
+        background: var(--status-ok-bg);
+        color: var(--status-ok-text);
+        padding: 4px 11px;
+        border-radius: 99px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        border: 1px solid var(--status-ok-border);
+        display: inline-block;
     }
-    div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+    .badge-warn {
+        background: var(--status-warn-bg);
+        color: var(--status-warn-text);
+        padding: 4px 11px;
+        border-radius: 99px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        border: 1px solid var(--status-warn-border);
+        display: inline-block;
+    }
+    .badge-danger {
+        background: var(--status-danger-bg);
+        color: var(--status-danger-text);
+        padding: 4px 11px;
+        border-radius: 99px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        border: 1px solid var(--status-danger-border);
+        display: inline-block;
+    }
+
+    .alert-card {
+        background: var(--app-card);
+        border: 1px solid var(--app-border);
+        border-left-width: 5px;
+        padding: 15px 16px;
         border-radius: var(--radius-md);
-        padding: 12px 16px !important;
-        margin-bottom: 8px !important;
-        transition: all 0.2s ease;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.15s ease;
+        margin-bottom: 8px;
     }
-    div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label:hover {
-        background: rgba(59, 130, 246, 0.12);
-        border-color: rgba(59, 130, 246, 0.4);
-        transform: translateX(4px);
+    .alert-card:hover {
+        transform: translateY(-2px);
     }
-    div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label p {
-        font-size: 1.05rem !important;
-        font-weight: 600 !important;
+    .alert-card.is-danger {
+        border-left-color: #EF4444;
+    }
+    .alert-card.is-warning {
+        border-left-color: #F59E0B;
+    }
+    .alert-meta {
+        font-size: 0.75rem;
+        color: var(--app-text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .alert-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--app-text);
+        margin: 5px 0 3px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .alert-cat {
+        font-size: 0.83rem;
+        color: var(--app-text-muted);
+    }
+    .alert-amount {
+        font-size: 1.15rem;
+        font-weight: 800;
+        margin-top: 8px;
+        font-variant-numeric: tabular-nums;
+    }
+    .alert-card.is-danger .alert-amount {
+        color: var(--status-danger-text);
+    }
+    .alert-card.is-warning .alert-amount {
+        color: var(--status-warn-text);
     }
 
-    /* Inputs, Selects e Tabelas */
-    .stTextInput input, .stSelectbox select {
-        background-color: var(--bg-surface) !important;
-        border: 1px solid var(--border-subtle) !important;
-        color: white !important;
-        border-radius: var(--radius-md) !important;
+    /* ==========================================================================
+       SIDEBAR E NAVEGAÇÃO ADAPTATIVA
+       ========================================================================== */
+    section[data-testid="stSidebar"] {
+        background-color: var(--app-surface);
+        border-right: 1px solid var(--app-border);
+    }
+
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 10px 20px 10px;
+        border-bottom: 1px solid var(--app-border);
+        margin-bottom: 18px;
+    }
+    .sidebar-logo {
+        background: linear-gradient(135deg, #2563EB 0%, #10B981 100%);
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
+        flex-shrink: 0;
+    }
+    .sidebar-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--app-text);
+        line-height: 1.1;
+    }
+    .sidebar-title-accent {
+        color: var(--brand-accent);
+    }
+    .sidebar-subtitle {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--app-text-muted);
+        margin-top: 3px;
+    }
+
+    section[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label {
+        background: var(--app-card);
+        border: 1px solid var(--app-border);
+        border-radius: var(--radius-md);
+        padding: 11px 15px !important;
+        margin-bottom: 8px !important;
+        transition: all 0.18s ease;
+    }
+    section[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label:hover {
+        border-color: var(--brand-primary-light);
+        background: color-mix(in srgb, var(--brand-primary) 10%, var(--app-card) 90%);
+        transform: translateX(3px);
+    }
+    section[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label p {
+        font-size: 0.98rem !important;
+        font-weight: 600 !important;
+        color: var(--app-text) !important;
+    }
+
+    /* ==========================================================================
+       CONTAINERS, INPUTS, BOTÕES E TABELAS (RESPEITANDO TEMA CLARO/ESCURO)
+       ========================================================================== */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        background: var(--app-card);
+        border: 1px solid var(--app-border) !important;
+        border-radius: var(--radius-lg) !important;
+        box-shadow: var(--shadow-card);
+        padding: 18px !important;
+    }
+
+    /* Campos de entrada sutis e legíveis em qualquer modo */
+    div[data-baseweb="input"] > div,
+    div[data-baseweb="select"] > div {
+        border-radius: var(--radius-sm) !important;
+        border-color: var(--app-border-strong) !important;
+    }
+    div[data-baseweb="input"] > div:focus-within,
+    div[data-baseweb="select"] > div:focus-within {
+        border-color: var(--brand-primary) !important;
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 22%, transparent) !important;
+    }
+
+    /* Botões principais e secundários */
+    .stButton > button,
+    .stDownloadButton > button,
+    div[data-testid="stFormSubmitButton"] > button,
+    div[data-testid="stPopover"] > div > button {
+        border-radius: var(--radius-sm) !important;
+        font-weight: 600 !important;
+        transition: all 0.18s ease !important;
+    }
+
+    /* DataFrames e Editores de Dados */
+    div[data-testid="stDataFrame"] {
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        border: 1px solid var(--app-border);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -363,12 +576,12 @@ hoje = date.today()
 mes_atual_str = hoje.strftime("%Y-%m")
 
 # ==========================================
-# SIDEBAR COM LOGO MODERNA
+# SIDEBAR COM LOGO ADAPTATIVA
 # ==========================================
 with st.sidebar:
     st.markdown("""
-        <div style="display: flex; align-items: center; gap: 14px; padding: 14px 12px 22px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 18px;">
-            <div style="background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35); flex-shrink: 0;">
+        <div class="sidebar-brand">
+            <div class="sidebar-logo">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                     <path d="M2 17l10 5 10-5"/>
@@ -376,8 +589,8 @@ with st.sidebar:
                 </svg>
             </div>
             <div>
-                <div style="font-size: 1.35rem; font-weight: 800; letter-spacing: -0.5px; color: #FFFFFF; line-height: 1.1;">Diviapp<span style="color:#34D399;">Pro</span></div>
-                <div style="font-size: 0.78rem; font-weight: 500; color: #9CA3AF; margin-top: 3px;">Henrique & Camila</div>
+                <div class="sidebar-title">Diviapp<span class="sidebar-title-accent">Pro</span></div>
+                <div class="sidebar-subtitle">Henrique & Camila</div>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -473,14 +686,15 @@ if menu == "🚀 Visão Geral":
         cols_alerta = st.columns(min(4, len(df_alertas)))
         for idx, (_, row_al) in enumerate(df_alertas.head(4).iterrows()):
             with cols_alerta[idx]:
-                cor_borda = "#EF4444" if str(row_al["status"]).lower() == "atrasado" else "#F59E0B"
+                is_atrasado = str(row_al["status"]).lower() == "atrasado"
+                classe_alerta = "is-danger" if is_atrasado else "is-warning"
                 venc_fmt = f"{row_al['vencimento_dt'].day:02d}{MESES_ABREV.get(row_al['vencimento_dt'].month, '')}" if pd.notnull(row_al["vencimento_dt"]) else "-"
                 st.markdown(f"""
-                    <div style="background:#111827; border-left: 5px solid {cor_borda}; padding: 14px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border: 1px solid #374151;">
-                        <div style="font-size:0.75rem; color:#9CA3AF; font-weight:600;">{row_al['aba_dono']} • Vence {venc_fmt}</div>
-                        <div style="font-size:1rem; font-weight:700; color:#F3F4F6; margin:4px 0;">{row_al['descricao']}</div>
-                        <div style="font-size:0.85rem; color:#9CA3AF;">{row_al['categoria']}</div>
-                        <div style="font-size:1.15rem; font-weight:700; color:{cor_borda}; margin-top:6px;">{formatar_moeda(row_al['valor'])}</div>
+                    <div class="alert-card {classe_alerta}">
+                        <div class="alert-meta">{row_al['aba_dono']} • Vence {venc_fmt}</div>
+                        <div class="alert-title" title="{row_al['descricao']}">{row_al['descricao']}</div>
+                        <div class="alert-cat">{row_al['categoria']}</div>
+                        <div class="alert-amount">{formatar_moeda(row_al['valor'])}</div>
                     </div>
                 """, unsafe_allow_html=True)
 
@@ -489,28 +703,41 @@ if menu == "🚀 Visão Geral":
     if not df_dash.empty:
         g1, g2 = st.columns([1.4, 1])
         with g1:
-            st.markdown("<div class='pro-card'>", unsafe_allow_html=True)
-            st.subheader("📊 Despesas por Categoria")
-            df_cat_g = df_dash.groupby("categoria", as_index=False)["valor"].sum().sort_values(by="valor", ascending=True)
-            fig_cat = px.bar(
-                df_cat_g, x="valor", y="categoria", orientation="h", text_auto=".2s",
-                color="valor", color_continuous_scale=["#3B82F6", "#10B981"]
-            )
-            fig_cat.update_layout(showlegend=False, height=380, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False, plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#F3F4F6"))
-            st.plotly_chart(fig_cat, use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+            with st.container(border=True):
+                st.subheader("📊 Despesas por Categoria")
+                df_cat_g = df_dash.groupby("categoria", as_index=False)["valor"].sum().sort_values(by="valor", ascending=True)
+                fig_cat = px.bar(
+                    df_cat_g, x="valor", y="categoria", orientation="h", text_auto=".2s",
+                    color="valor", color_continuous_scale=["#2563EB", "#10B981"]
+                )
+                fig_cat.update_layout(
+                    showlegend=False,
+                    height=380,
+                    margin=dict(l=0, r=10, t=10, b=0),
+                    coloraxis_showscale=False,
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    font=dict(family="Plus Jakarta Sans, sans-serif")
+                )
+                st.plotly_chart(fig_cat, use_container_width=True, theme="streamlit")
 
         with g2:
-            st.markdown("<div class='pro-card'>", unsafe_allow_html=True)
-            st.subheader("⚖️ Divisão Henrique vs Camila")
-            df_ev = df_dash.groupby(["mes_abrev", "aba_dono"], as_index=False)["valor"].sum()
-            fig_ev = px.bar(
-                df_ev, x="mes_abrev", y="valor", color="aba_dono", barmode="group", text_auto=".2s",
-                color_discrete_map={"Henrique": "#3B82F6", "Camila": "#EC4899"}
-            )
-            fig_ev.update_layout(height=380, margin=dict(l=0, r=0, t=10, b=0), plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#F3F4F6"), legend_title_text="")
-            st.plotly_chart(fig_ev, use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+            with st.container(border=True):
+                st.subheader("⚖️ Divisão Henrique vs Camila")
+                df_ev = df_dash.groupby(["mes_abrev", "aba_dono"], as_index=False)["valor"].sum()
+                fig_ev = px.bar(
+                    df_ev, x="mes_abrev", y="valor", color="aba_dono", barmode="group", text_auto=".2s",
+                    color_discrete_map={"Henrique": "#2563EB", "Camila": "#DB2777"}
+                )
+                fig_ev.update_layout(
+                    height=380,
+                    margin=dict(l=0, r=10, t=10, b=0),
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    font=dict(family="Plus Jakarta Sans, sans-serif"),
+                    legend_title_text=""
+                )
+                st.plotly_chart(fig_ev, use_container_width=True, theme="streamlit")
     else:
         st.info("Nenhum lançamento encontrado para o mês selecionado.")
 
