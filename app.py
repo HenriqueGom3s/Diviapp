@@ -13,77 +13,182 @@ import io
 st.set_page_config(page_title="Diviapp Pro", page_icon="💎", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-    html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; }
-    .main { background-color: #F4F7FE; }
-    
-    /* Cards Executivos */
-    .pro-card {
-        background: white;
-        border-radius: 16px;
-        padding: 20px 22px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-        border: 1px solid #EEF2F6;
-        margin-bottom: 12px;
-    }
-    .pro-card-dark {
-        background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%);
-        color: white;
-        border-radius: 16px;
-        padding: 20px 22px;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.22);
-        margin-bottom: 12px;
-    }
-    .card-label { font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.78; margin-bottom: 6px; }
-    .card-value { font-size: 1.65rem; font-weight: 800; margin: 0; line-height: 1.2; }
-    .card-sub { font-size: 0.82rem; margin-top: 8px; opacity: 0.88; }
-    
-    /* Badges de Status */
-    .badge-ok { background: #DEF7EC; color: #03543F; padding: 3px 10px; border-radius: 99px; font-weight: 600; font-size: 0.75rem; }
-    .badge-warn { background: #FEF3C7; color: #92400E; padding: 3px 10px; border-radius: 99px; font-weight: 600; font-size: 0.75rem; }
-    .badge-danger { background: #FDE8E8; color: #9B1C1C; padding: 3px 10px; border-radius: 99px; font-weight: 600; font-size: 0.75rem; }
-    
-    /* Títulos */
-    h1, h2, h3 { color: #0F172A !important; font-weight: 800 !important; letter-spacing: -0.4px; }
+    /* 1. Importação das Fontes (Outfit para Títulos/Valores + Inter para Corpo/Tabelas) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap');
 
-    /* ==========================================
-       SIDEBAR REDESENHADA E FONTE AUMENTADA
-       ========================================== */
-    div[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
-        border-right: 1px solid #334155;
-    }
-    div[data-testid="stSidebar"] * {
-        color: #F8FAFC !important;
-    }
-    div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        padding: 14px 16px !important;
-        margin-bottom: 10px !important;
-        transition: all 0.2s ease;
-        cursor: pointer;
-    }
-    div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label:hover {
-        background: rgba(59, 130, 246, 0.22);
-        border-color: #3B82F6;
-        transform: translateX(4px);
-    }
-    div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label p {
-        font-size: 1.12rem !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.2px;
-    }
-    div[data-testid="stSidebar"] hr {
-        border-color: rgba(255, 255, 255, 0.15) !important;
-    }
-    div[data-testid="stSidebar"] button {
-        background-color: #1E293B !important;
-        border: 1px solid #475569 !important;
-    }
-    </style>
+/* 2. Variáveis CSS Globais (Design Tokens) */
+:root {
+    /* Cores de Fundo e Superfície */
+    --bg-main: #F8FAFC;
+    --bg-surface: #FFFFFF;
+    --bg-sidebar: #0F172A;
+    --bg-sidebar-hover: rgba(79, 70, 229, 0.16);
+    
+    /* Cores da Marca e Destaque */
+    --color-primary: #0F172A;
+    --color-accent: #10B981;        /* Verde Esmeralda para botões principais */
+    --color-accent-hover: #059669;
+    --color-secondary: #4F46E5;     /* Índigo para detalhes e filtros */
+    
+    /* Cores de Texto */
+    --text-primary: #1E293B;
+    --text-secondary: #64748B;
+    --text-on-dark: #F8FAFC;
+    
+    /* Cores Semânticas (Status) */
+    --status-ok-bg: #ECFDF5;
+    --status-ok-text: #047857;
+    --status-warn-bg: #FFFBEB;
+    --status-warn-text: #B45309;
+    --status-danger-bg: #FEF2F2;
+    --status-danger-text: #B91C1C;
+
+    /* Bordas, Raios e Sombras */
+    --border-subtle: #E2E8F0;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --shadow-soft: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 4px 10px -2px rgba(15, 23, 42, 0.02);
+    --shadow-hover: 0 18px 32px -8px rgba(15, 23, 42, 0.08);
+    --transition-fast: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 3. Reset e Tipografia Base */
+html, body, [class*="css"] {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+}
+
+.main {
+    background-color: var(--bg-main) !important;
+    padding-top: 1.5rem;
+}
+
+/* Títulos com a fonte Outfit */
+h1, h2, h3, .card-value {
+    font-family: 'Outfit', sans-serif !important;
+    color: var(--color-primary) !important;
+    letter-spacing: -0.025em;
+}
+
+/* 4. Cards Executivos com "Respiro" e Números Tabulares */
+.pro-card {
+    background: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    padding: 24px 26px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-soft);
+    transition: var(--transition-fast);
+    margin-bottom: 16px;
+}
+
+.pro-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+    border-color: #CBD5E1;
+}
+
+.pro-card-dark {
+    background: linear-gradient(135deg, var(--color-primary) 0%, #1E293B 60%, #312E81 100%);
+    color: var(--text-on-dark);
+    border-radius: var(--radius-lg);
+    padding: 24px 26px;
+    box-shadow: 0 14px 28px -6px rgba(15, 23, 42, 0.25);
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pro-card-dark .card-value {
+    color: #FFFFFF !important;
+}
+
+.card-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.pro-card-dark .card-label {
+    color: #94A3B8;
+}
+
+.card-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums; /* Alinha todos os dígitos perfeitamente */
+}
+
+.card-sub {
+    font-size: 0.84rem;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(226, 232, 240, 0.6);
+    color: var(--text-secondary);
+}
+
+.pro-card-dark .card-sub {
+    border-top-color: rgba(255, 255, 255, 0.12);
+    color: #CBD5E1;
+}
+
+/* 5. Botões Principais e de Ação (+ / Salvar) */
+button[kind="primary"], .btn-primary {
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    font-weight: 600 !important;
+    padding: 0.55rem 1.2rem !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
+    transition: var(--transition-fast) !important;
+}
+
+button[kind="primary"]:hover, .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35) !important;
+    filter: brightness(1.03);
+}
+
+/* 6. Badges Semânticas de Status */
+.badge-ok, .badge-warn, .badge-danger {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.01em;
+}
+.badge-ok { background: var(--status-ok-bg); color: var(--status-ok-text); }
+.badge-warn { background: var(--status-warn-bg); color: var(--status-warn-text); }
+.badge-danger { background: var(--status-danger-bg); color: var(--status-danger-text); }
+
+/* 7. Menu Lateral (Sidebar) Sofisticado */
+div[data-testid="stSidebar"] {
+    background-color: var(--bg-sidebar) !important;
+    border-right: 1px solid #1E293B;
+}
+
+div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-md);
+    padding: 14px 18px !important;
+    margin-bottom: 10px !important;
+    transition: var(--transition-fast);
+}
+
+div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label:hover {
+    background: var(--bg-sidebar-hover);
+    border-color: var(--color-secondary);
+    transform: translateX(4px);
+}
 """, unsafe_allow_html=True)
 
 DB_FILE = "diviapp_pro.db"
