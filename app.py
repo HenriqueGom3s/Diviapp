@@ -3,18 +3,19 @@ import pandas as pd
 import plotly.express as px
 import sqlite3
 import os
-from datetime import date, timedelta
+import re
+from datetime import date
 import io
 
 # ==========================================
 # CONFIGURAÇÃO DA PÁGINA E CSS PRO UI
 # ==========================================
-st.set_page_config(page_title="Diviapp Pro", page_icon="🌱", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Diviapp Pro", page_icon="💎", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    html, body, [class*="css"] { font-family: 'Plus Jakarta Sans', sans-serif; }
     .main { background-color: #F4F7FE; }
     
     /* Cards Executivos */
@@ -27,25 +28,61 @@ st.markdown("""
         margin-bottom: 12px;
     }
     .pro-card-dark {
-        background: linear-gradient(135deg, #1E2A4F 0%, #2A3F75 100%);
+        background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 100%);
         color: white;
         border-radius: 16px;
         padding: 20px 22px;
-        box-shadow: 0 8px 24px rgba(30, 42, 79, 0.18);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.22);
         margin-bottom: 12px;
     }
-    .card-label { font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.75; margin-bottom: 6px; }
-    .card-value { font-size: 1.65rem; font-weight: 700; margin: 0; line-height: 1.2; }
-    .card-sub { font-size: 0.8rem; margin-top: 8px; opacity: 0.85; }
+    .card-label { font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.78; margin-bottom: 6px; }
+    .card-value { font-size: 1.65rem; font-weight: 800; margin: 0; line-height: 1.2; }
+    .card-sub { font-size: 0.82rem; margin-top: 8px; opacity: 0.88; }
     
     /* Badges de Status */
     .badge-ok { background: #DEF7EC; color: #03543F; padding: 3px 10px; border-radius: 99px; font-weight: 600; font-size: 0.75rem; }
     .badge-warn { background: #FEF3C7; color: #92400E; padding: 3px 10px; border-radius: 99px; font-weight: 600; font-size: 0.75rem; }
     .badge-danger { background: #FDE8E8; color: #9B1C1C; padding: 3px 10px; border-radius: 99px; font-weight: 600; font-size: 0.75rem; }
     
-    /* Títulos e Divisores */
-    h1, h2, h3 { color: #1E2A4F !important; font-weight: 700 !important; letter-spacing: -0.3px; }
-    div[data-testid="stSidebar"] { background-color: #FFFFFF; border-right: 1px solid #E2E8F0; }
+    /* Títulos */
+    h1, h2, h3 { color: #0F172A !important; font-weight: 800 !important; letter-spacing: -0.4px; }
+
+    /* ==========================================
+       SIDEBAR REDESENHADA E FONTE AUMENTADA
+       ========================================== */
+    div[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
+        border-right: 1px solid #334155;
+    }
+    div[data-testid="stSidebar"] * {
+        color: #F8FAFC !important;
+    }
+    div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 14px 16px !important;
+        margin-bottom: 10px !important;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label:hover {
+        background: rgba(59, 130, 246, 0.22);
+        border-color: #3B82F6;
+        transform: translateX(4px);
+    }
+    div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label p {
+        font-size: 1.12rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.2px;
+    }
+    div[data-testid="stSidebar"] hr {
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    div[data-testid="stSidebar"] button {
+        background-color: #1E293B !important;
+        border: 1px solid #475569 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -54,7 +91,42 @@ EXCEL_PADRAO = "controle_financeiro - HENRIQUE E CAMILA_2.xlsx"
 EXCEL_ALT = "controle_financeiro - HENRIQUE E CAMILA.xlsx"
 
 # ==========================================
-# MAPA DE EMOJIS INTELIGENTE PARA CATEGORIAS
+# DATAS E ABREVIAÇÕES DE MESES (/JAN, /FEV...)
+# ==========================================
+MESES_ABREV = {
+    1: "/JAN", 2: "/FEV", 3: "/MAR", 4: "/ABR",
+    5: "/MAI", 6: "/JUN", 7: "/JUL", 8: "/AGO",
+    9: "/SET", 10: "/OUT", 11: "/NOV", 12: "/DEZ"
+}
+
+def formatar_mes_abrev(mes_ano_str):
+    """Converte '2026-10' para '/OUT 2026'"""
+    if not mes_ano_str or not isinstance(mes_ano_str, str) or "-" not in mes_ano_str:
+        return str(mes_ano_str)
+    try:
+        ano, mes = mes_ano_str.split("-")
+        return f"{MESES_ABREV.get(int(mes), '/MÊS')} {ano}"
+    except Exception:
+        return mes_ano_str
+
+def formatar_data_abrev(dt):
+    """Converte uma data para '15/OUT'"""
+    if pd.isna(dt):
+        return "-"
+    try:
+        return f"{dt.day:02d}{MESES_ABREV.get(dt.month, '')}"
+    except Exception:
+        return str(dt)
+
+def calcular_mes_adjacente(ano, mes, delta):
+    """Retorna 'YYYY-MM' somando ou subtraindo meses"""
+    total_meses = (ano * 12 + (mes - 1)) + delta
+    novo_ano = total_meses // 12
+    novo_mes = (total_meses % 12) + 1
+    return f"{novo_ano:04d}-{novo_mes:02d}"
+
+# ==========================================
+# MAPA DE EMOJIS INTELIGENTE (CORRIGIDO BUG DO ⚡)
 # ==========================================
 EMOJI_MAP = {
     "moradia": "🏠", "aluguel": "🏠", "casa": "🏠",
@@ -78,26 +150,48 @@ def aplicar_emoji(nome_cat):
     if not nome_cat:
         return "📦 Outros"
     texto = str(nome_cat).strip()
-    # Se já começa com emoji, mantém como está
-    if any(ord(char) > 10000 for char in texto[:2]):
-        return texto
-    chave = texto.lower()
+    # Remove todos os emojis/símbolos repetidos no início antes de aplicar apenas um (Corrige bug do ⚡ Energia)
+    texto_limpo = re.sub(r'^[^\w\sÀ-ÿ]+\s*', '', texto).strip()
+    if not texto_limpo:
+        texto_limpo = "Outros"
+    chave = texto_limpo.lower()
     for k, emj in EMOJI_MAP.items():
         if k in chave:
-            return f"{emj} {texto}"
-    return f"🏷️ {texto}"
+            return f"{emj} {texto_limpo}"
+    return f"🏷️ {texto_limpo}"
 
 def formatar_moeda(valor):
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 # ==========================================
-# BANCO DE DADOS E CACHE DE ALTA PERFORMANCE
+# BANCO DE DADOS E SANITIZAÇÃO DE CATEGORIAS
 # ==========================================
 def get_conn():
     return sqlite3.connect(DB_FILE, check_same_thread=False)
 
+def sanitizar_emojis_banco():
+    """Limpa categorias no banco que possam ter ficado com '⚡ ⚡ ⚡ Energia'"""
+    conn = get_conn()
+    c = conn.cursor()
+    try:
+        for tabela, col in [("contas", "categoria"), ("parametros", "valor")]:
+            if tabela == "parametros":
+                rows = c.execute("SELECT id, valor FROM parametros WHERE tipo='categoria'").fetchall()
+            else:
+                rows = c.execute("SELECT id, categoria FROM contas").fetchall()
+            for r_id, val in rows:
+                novo_val = aplicar_emoji(val)
+                if novo_val != val:
+                    c.execute(f"UPDATE {tabela} SET {col} = ? WHERE id = ?", (novo_val, r_id))
+        conn.commit()
+    except Exception:
+        pass
+    finally:
+        conn.close()
+
 def inicializar_banco():
     if os.path.exists(DB_FILE):
+        sanitizar_emojis_banco()
         return
     conn = get_conn()
     c = conn.cursor()
@@ -185,9 +279,11 @@ def ler_dados_completos():
         df_c["categoria"] = df_c["categoria"].apply(aplicar_emoji)
         df_c["vencimento_dt"] = pd.to_datetime(df_c["vencimento"], errors="coerce")
         df_c["mes_ano"] = df_c["vencimento_dt"].dt.strftime("%Y-%m")
+        df_c["mes_abrev"] = df_c["mes_ano"].apply(formatar_mes_abrev)
     else:
         df_c["vencimento_dt"] = pd.Series(dtype="datetime64[ns]")
         df_c["mes_ano"] = pd.Series(dtype="str")
+        df_c["mes_abrev"] = pd.Series(dtype="str")
 
     if not df_i.empty:
         df_i["data_dt"] = pd.to_datetime(df_i["data"], errors="coerce")
@@ -215,29 +311,33 @@ lista_status = df_param[df_param["tipo"] == "status"]["valor"].drop_duplicates()
 lista_formas = df_param[df_param["tipo"] == "forma_pagamento"]["valor"].drop_duplicates().tolist()
 responsaveis_opcoes = ["Casal", "Henrique", "Camila"]
 
-ganhos_dict = dict(zip(df_ganhos["aba_dono"], df_ganhos["ganho_mensal"]))
-ganho_h = float(ganhos_dict.get("Henrique", 3985.0))
-ganho_c = float(ganhos_dict.get("Camila", 2860.0))
+hoje = date.today()
+mes_atual_str = hoje.strftime("%Y-%m")
 
 # ==========================================
-# SIDEBAR COM LOGO COMPACTA
+# SIDEBAR COM NOVA LOGO MODERNA E LAYOUT PREMIUM
 # ==========================================
 with st.sidebar:
-    col_l1, col_l2, col_l3 = st.columns([1, 2, 1])
-    with col_l2:
-        if os.path.exists("logo.jpg"):
-            st.image("logo.jpg", width=110)
-        elif os.path.exists("input_file_0.png"):
-            st.image("input_file_0.png", width=110)
-        else:
-            st.markdown("<h2 style='text-align:center; margin:0;'>🌱</h2>", unsafe_allow_html=True)
-    
-    st.markdown("<p style='text-align:center; font-weight:700; color:#1E2A4F; margin-top:-5px; margin-bottom:15px;'>Diviapp • Henrique & Camila</p>", unsafe_allow_html=True)
+    st.markdown("""
+        <div style="display: flex; align-items: center; gap: 14px; padding: 14px 12px 22px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 18px;">
+            <div style="background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%); width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35); flex-shrink: 0;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <div>
+                <div style="font-size: 1.45rem; font-weight: 800; letter-spacing: -0.5px; color: #FFFFFF; line-height: 1.1;">Diviapp<span style="color:#38BDF8;">Pro</span></div>
+                <div style="font-size: 0.82rem; font-weight: 500; color: #94A3B8; margin-top: 3px;">Henrique & Camila</div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
     menu = st.radio(
-        "Navegação",
+        "Navegação Principal",
         [
-            "🚀 Visão Geral (Dashboard)",
+            "🚀 Visão Geral",
             "📅 Resumo Mensal",
             "🧔🏻 Contas Henrique",
             "👩🏻 Contas Camila",
@@ -247,9 +347,8 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
     with st.expander("💾 Backup & Exportar Excel"):
-        st.caption("Gere a planilha atualizada apenas quando desejar baixar.")
         if st.button("Preparar Arquivo Excel", use_container_width=True):
             output = io.BytesIO()
             with pd.ExcelWriter(output, engine="openpyxl") as writer:
@@ -257,7 +356,7 @@ with st.sidebar:
                 df_contas[df_contas["aba_dono"] == "Camila"].to_excel(writer, sheet_name="Contas do Mês Camila", index=False)
                 df_inv.to_excel(writer, sheet_name="Investimentos", index=False)
             st.download_button(
-                "📥 Clique para Baixar (.xlsx)",
+                "📥 Baixar Planilha (.xlsx)",
                 data=output.getvalue(),
                 file_name=f"Diviapp_{date.today().strftime('%Y_%m_%d')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -270,50 +369,48 @@ with st.sidebar:
             st.rerun()
 
 # ==========================================
-# 1. DASHBOARD EXECUTIVO (TUDO VISÍVEL POR PADRÃO)
+# 1. VISÃO GERAL (PADRÃO: FILTRO DO MÊS ATUAL)
 # ==========================================
-if menu == "🚀 Visão Geral (Dashboard)":
-    col_t1, col_t2 = st.columns([3, 1])
-    with col_t1:
-        st.title("🚀 Visão Geral Financeira")
-        st.caption("Todas as informações consolidadas do casal estão visíveis por padrão.")
-    
-    # Filtro opcional recolhido para não esconder nada por padrão
-    df_dash = df_contas.copy()
-    df_inv_dash = df_inv.copy()
-    
-    with st.expander("🔍 Filtrar por Mês, Período ou Pessoa (Opcional - Padrão: Tudo Visível)", expanded=False):
-        f1, f2, f3 = st.columns(3)
-        meses_disp = sorted(df_contas["mes_ano"].dropna().unique().tolist())
-        with f1:
-            tipo_f = st.selectbox("Modo de Filtro:", ["Mostrar Tudo (Padrão)", "Selecionar Mês(es)", "Intervalo de Datas"])
-        with f2:
-            if tipo_f == "Selecionar Mês(es)":
-                m_sel = st.multiselect("Meses:", meses_disp, default=meses_disp)
-                df_dash = df_dash[df_dash["mes_ano"].isin(m_sel)]
-            elif tipo_f == "Intervalo de Datas" and not df_contas.empty:
-                d_min, d_max = df_contas["vencimento_dt"].min().date(), df_contas["vencimento_dt"].max().date()
-                per = st.date_input("Período:", value=(d_min, d_max))
-                if isinstance(per, tuple) and len(per) == 2:
-                    df_dash = df_dash[(df_dash["vencimento_dt"].dt.date >= per[0]) & (df_dash["vencimento_dt"].dt.date <= per[1])]
-        with f3:
-            p_sel = st.multiselect("Pessoa:", ["Henrique", "Camila"], default=["Henrique", "Camila"])
-            df_dash = df_dash[df_dash["aba_dono"].isin(p_sel)]
+if menu == "🚀 Visão Geral":
+    st.title("🚀 Visão Geral Financeira")
 
-    # Cálculos Executivos Prioritários
+    meses_disp = sorted(list(set(df_contas["mes_ano"].dropna().unique().tolist() + [mes_atual_str])))
+    opcoes_mapa = {m: formatar_mes_abrev(m) for m in meses_disp}
+
+    # Barra de filtro rápida já carregada com o mês atual por padrão
+    f_col1, f_col2 = st.columns([2.2, 1])
+    with f_col1:
+        meses_sel = st.multiselect(
+            "📅 Mês de Referência:",
+            options=meses_disp,
+            default=[mes_atual_str],
+            format_func=lambda x: opcoes_mapa.get(x, x)
+        )
+    with f_col2:
+        pessoas_sel = st.multiselect(
+            "👥 Titular:",
+            options=["Henrique", "Camila"],
+            default=["Henrique", "Camila"]
+        )
+
+    df_dash = df_contas.copy()
+    if meses_sel:
+        df_dash = df_dash[df_dash["mes_ano"].isin(meses_sel)]
+    if pessoas_sel:
+        df_dash = df_dash[df_dash["aba_dono"].isin(pessoas_sel)]
+
     total_geral = df_dash["valor"].sum()
     total_pago = df_dash[df_dash["status"].str.lower() == "pago"]["valor"].sum()
     total_pendente = df_dash[df_dash["status"].str.lower() == "pendente"]["valor"].sum()
     total_atrasado = df_dash[df_dash["status"].str.lower() == "atrasado"]["valor"].sum()
     total_h = df_dash[df_dash["aba_dono"] == "Henrique"]["valor"].sum()
     total_c = df_dash[df_dash["aba_dono"] == "Camila"]["valor"].sum()
-    patrimonio = df_inv_dash["saldo_atual"].sum() if not df_inv_dash.empty else 0.0
+    patrimonio = df_inv["saldo_atual"].sum() if not df_inv.empty else 0.0
     perc_quitado = (total_pago / total_geral * 100) if total_geral > 0 else 0.0
 
-    # 1º DESTAQUE: O QUE IMPORTA PRIMEIRO (CARDS PRO)
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        render_card("💰 Total Movimentado", formatar_moeda(total_geral), f"🧔🏻 H: {formatar_moeda(total_h)} | 👩🏻 C: {formatar_moeda(total_c)}", dark=True)
+        render_card("💰 Total no Período", formatar_moeda(total_geral), f"🧔🏻 H: {formatar_moeda(total_h)} | 👩🏻 C: {formatar_moeda(total_c)}", dark=True)
     with c2:
         render_card("✅ Total Quitado", formatar_moeda(total_pago), f"<span class='badge-ok'>{perc_quitado:.1f}% pago do total</span>")
     with c3:
@@ -321,10 +418,8 @@ if menu == "🚀 Visão Geral (Dashboard)":
     with c4:
         render_card("🚨 Atrasado + 📈 Investido", formatar_moeda(total_atrasado), f"Patrimônio: <b>{formatar_moeda(patrimonio)}</b>")
 
-    # Barra de progresso de quitação
-    st.progress(min(perc_quitado / 100.0, 1.0), text=f"Progresso de Quitação Geral das Contas: {perc_quitado:.1f}%")
+    st.progress(min(perc_quitado / 100.0, 1.0), text=f"Progresso de Quitação do Período: {perc_quitado:.1f}%")
 
-    # 2º DESTAQUE: ALERTAS DE CONTAS PENDENTES / ATRASADAS MAIS IMPORTANTES
     df_alertas = df_dash[df_dash["status"].str.lower().isin(["atrasado", "pendente"])].sort_values(by="vencimento_dt")
     if not df_alertas.empty:
         st.markdown("### 🔔 Atenção Imediata: Próximas Contas a Pagar")
@@ -332,7 +427,7 @@ if menu == "🚀 Visão Geral (Dashboard)":
         for idx, (_, row_al) in enumerate(df_alertas.head(4).iterrows()):
             with cols_alerta[idx]:
                 cor_borda = "#EF4444" if str(row_al["status"]).lower() == "atrasado" else "#F59E0B"
-                venc_fmt = row_al["vencimento_dt"].strftime("%d/%m/%Y") if pd.notnull(row_al["vencimento_dt"]) else "-"
+                venc_fmt = f"{row_al['vencimento_dt'].day:02d}{MESES_ABREV.get(row_al['vencimento_dt'].month, '')}" if pd.notnull(row_al["vencimento_dt"]) else "-"
                 st.markdown(f"""
                     <div style="background:white; border-left: 5px solid {cor_borda}; padding: 14px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                         <div style="font-size:0.75rem; color:#64748B; font-weight:600;">{row_al['aba_dono']} • Vence {venc_fmt}</div>
@@ -344,12 +439,11 @@ if menu == "🚀 Visão Geral (Dashboard)":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 3º DESTAQUE: GRÁFICOS VISUAIS LIMPOS
     if not df_dash.empty:
         g1, g2 = st.columns([1.4, 1])
         with g1:
             st.markdown("<div class='pro-card'>", unsafe_allow_html=True)
-            st.subheader("📊 Para onde vai o dinheiro? (Por Categoria)")
+            st.subheader("📊 Despesas por Categoria")
             df_cat_g = df_dash.groupby("categoria", as_index=False)["valor"].sum().sort_values(by="valor", ascending=True)
             fig_cat = px.bar(
                 df_cat_g, x="valor", y="categoria", orientation="h", text_auto=".2s",
@@ -361,43 +455,55 @@ if menu == "🚀 Visão Geral (Dashboard)":
 
         with g2:
             st.markdown("<div class='pro-card'>", unsafe_allow_html=True)
-            st.subheader("⚖️ Evolução Mensal (Henrique vs Camila)")
-            df_ev = df_dash.groupby(["mes_ano", "aba_dono"], as_index=False)["valor"].sum().sort_values("mes_ano")
+            st.subheader("⚖️ Divisão Henrique vs Camila")
+            df_ev = df_dash.groupby(["mes_abrev", "aba_dono"], as_index=False)["valor"].sum()
             fig_ev = px.bar(
-                df_ev, x="mes_ano", y="valor", color="aba_dono", barmode="group", text_auto=".2s",
+                df_ev, x="mes_abrev", y="valor", color="aba_dono", barmode="group", text_auto=".2s",
                 color_discrete_map={"Henrique": "#1E2A4F", "Camila": "#EC4899"}
             )
             fig_ev.update_layout(height=380, margin=dict(l=0, r=0, t=10, b=0), plot_bgcolor="rgba(0,0,0,0)", legend_title_text="")
             st.plotly_chart(fig_ev, use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
+    else:
+        st.info("Nenhum lançamento encontrado para o mês selecionado.")
 
 # ==========================================
-# 2. RESUMO MENSAL (MODERNO E SEM FILTRO PRÉVIO)
+# 2. RESUMO MENSAL (MÊS PASSADO, ATUAL E PRÓXIMO)
 # ==========================================
 elif menu == "📅 Resumo Mensal":
     st.title("📅 Resumo Mensal Inteligente")
-    st.caption("Visão panorâmica de todos os meses lado a lado sem cara de planilha.")
 
-    meses_todos = sorted(df_contas["mes_ano"].dropna().unique().tolist())
-    
-    # Cards de cada mês em destaque no topo
-    cols_mes = st.columns(max(1, len(meses_todos)))
-    for i, m in enumerate(meses_todos):
-        df_m = df_contas[df_contas["mes_ano"] == m]
+    mes_passado = calcular_mes_adjacente(hoje.year, hoje.month, -1)
+    mes_atual = calcular_mes_adjacente(hoje.year, hoje.month, 0)
+    proximo_mes = calcular_mes_adjacente(hoje.year, hoje.month, 1)
+
+    meses_foco = [
+        ("⏪ Mês Passado", mes_passado, False),
+        ("📍 Mês Atual", mes_atual, True),
+        ("⏩ Próximo Mês", proximo_mes, False)
+    ]
+
+    cols_mes = st.columns(3)
+    for i, (rotulo, m_cod, destaque_escuro) in enumerate(meses_foco):
+        df_m = df_contas[df_contas["mes_ano"] == m_cod]
         tot_m = df_m["valor"].sum()
         pago_m = df_m[df_m["status"].str.lower() == "pago"]["valor"].sum()
         pend_m = tot_m - pago_m
         perc_m = (pago_m / tot_m * 100) if tot_m > 0 else 0.0
         with cols_mes[i]:
             render_card(
-                f"🗓️ Mês {m}",
+                f"{rotulo} ({formatar_mes_abrev(m_cod)})",
                 formatar_moeda(tot_m),
-                f"✅ Pago: {formatar_moeda(pago_m)} ({perc_m:.0f}%)<br>⏳ Falta: <b>{formatar_moeda(pend_m)}</b>"
+                f"✅ Pago: {formatar_moeda(pago_m)} ({perc_m:.0f}%)<br>⏳ Falta: <b>{formatar_moeda(pend_m)}</b>",
+                dark=destaque_escuro
             )
 
-    st.markdown("### 🏷️ Comparativo de Categorias em Todos os Meses")
+    st.markdown("### 🏷️ Comparativo de Categorias por Mês")
     if not df_contas.empty:
         piv_cat = df_contas.pivot_table(index="categoria", columns="mes_ano", values="valor", aggfunc="sum", fill_value=0.0)
+        colunas_ordenadas = sorted(piv_cat.columns.tolist())
+        piv_cat = piv_cat[colunas_ordenadas]
+        piv_cat.columns = [formatar_mes_abrev(c) for c in colunas_ordenadas]
         piv_cat["Total Geral"] = piv_cat.sum(axis=1)
         piv_cat = piv_cat.sort_values(by="Total Geral", ascending=False).reset_index()
         
@@ -409,7 +515,7 @@ elif menu == "📅 Resumo Mensal":
         st.dataframe(piv_cat, column_config=col_cfg, use_container_width=True, hide_index=True)
 
 # ==========================================
-# 3 e 4. CONTAS HENRIQUE E CAMILA (CRUD RÁPIDO COM @st.fragment)
+# 3 e 4. CENTRAL DE CONTAS HENRIQUE E CAMILA
 # ==========================================
 elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
     dono_atual = "Henrique" if "Henrique" in menu else "Camila"
@@ -420,27 +526,43 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
     @st.fragment
     def secao_crud_contas(dono):
         df_c_all, _, _, df_g_all = ler_dados_completos()
-        df_dono = df_c_all[df_c_all["aba_dono"] == dono].sort_values(by="vencimento_dt", ascending=False).copy()
+        df_dono_total = df_c_all[df_c_all["aba_dono"] == dono].sort_values(by="vencimento_dt", ascending=False).copy()
         ganho_dono = float(dict(zip(df_g_all["aba_dono"], df_g_all["ganho_mensal"])).get(dono, 0.0))
 
-        # KPIs no Topo (Todas as contas visíveis por padrão)
-        tot_geral = df_dono["valor"].sum()
-        tot_pago = df_dono[df_dono["status"].str.lower() == "pago"]["valor"].sum()
-        tot_pend = df_dono[df_dono["status"].str.lower().isin(["pendente", "atrasado"])]["valor"].sum()
+        # Controle de paginação de 20 em 20 no session_state
+        chave_limite = f"limite_linhas_{dono}"
+        if chave_limite not in st.session_state:
+            st.session_state[chave_limite] = 20
 
-        k1, k2, k3, k4 = st.columns(4)
-        with k1: render_card(f"Total Lançado ({dono})", formatar_moeda(tot_geral), f"{len(df_dono)} lançamentos", dark=True)
-        with k2: render_card("✅ Total Pago", formatar_moeda(tot_pago), "Contas quitadas")
-        with k3: render_card("⏳ Pendente / Atrasado", formatar_moeda(tot_pend), "Aguardando pagamento")
-        with k4: render_card("💵 Renda Base Mensal", formatar_moeda(ganho_dono), "Configurada na planilha")
+        # Lista de meses com abreviação /JAN, /FEV... e mês atual selecionado por padrão
+        meses_dono = sorted(list(set(df_dono_total["mes_ano"].dropna().unique().tolist() + [mes_atual_str])))
+        opcoes_mes_dono = ["TODOS"] + meses_dono
+        idx_padrao = opcoes_mes_dono.index(mes_atual_str) if mes_atual_str in opcoes_mes_dono else 0
 
-        # Barra de Ações Rápidas: Novo Lançamento + Filtro Opcional
-        col_act1, col_act2 = st.columns([1.2, 2])
-        with col_act1:
-            with st.popover(f"➕ Nova Conta para {dono}", use_container_width=True):
+        # Barra Superior de Filtros + Botão "+" sem descrição
+        col_f_mes, col_f_busca, col_btn_mais = st.columns([1.3, 2.4, 0.35])
+        with col_f_mes:
+            mes_escolhido = st.selectbox(
+                "📅 Mês",
+                options=opcoes_mes_dono,
+                index=idx_padrao,
+                format_func=lambda x: "🗓️ Todos os Meses" if x == "TODOS" else formatar_mes_abrev(x),
+                label_visibility="collapsed",
+                key=f"sel_mes_{dono}"
+            )
+        with col_f_busca:
+            busca = st.text_input(
+                "🔎 Filtrar",
+                placeholder="🔎 Buscar por descrição, categoria ou status...",
+                label_visibility="collapsed",
+                key=f"busca_{dono}"
+            )
+        with col_btn_mais:
+            # Botão de "+" sem descrição para adicionar conta na planilha
+            with st.popover("➕", use_container_width=True):
                 with st.form(f"form_rapido_{dono}", clear_on_submit=True):
                     st.markdown(f"**Nova Conta ({dono})**")
-                    in_desc = st.text_input("Descrição *", placeholder="Ex: Aluguel, Internet...")
+                    in_desc = st.text_input("Descrição *", placeholder="Ex: Energia, Mercado...")
                     c_f1, c_f2 = st.columns(2)
                     in_cat = c_f1.selectbox("Categoria", lista_categorias)
                     in_val = c_f2.number_input("Valor (R$)", min_value=0.0, step=10.0, format="%.2f")
@@ -452,84 +574,131 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
                     in_resp = c_f6.selectbox("Responsável", responsaveis_opcoes, index=responsaveis_opcoes.index(dono))
                     in_obs = st.text_input("Observações")
 
-                    if st.form_submit_button("💾 Salvar Agora", type="primary", use_container_width=True):
+                    if st.form_submit_button("💾 Salvar", type="primary", use_container_width=True):
                         if in_desc.strip():
                             conn = get_conn()
                             conn.execute("""INSERT INTO contas (aba_dono, descricao, categoria, valor, vencimento, status, forma_pagamento, responsavel, observacoes)
                                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                                         (dono, in_desc.strip(), in_cat, in_val, in_venc.strftime("%Y-%m-%d"), in_stat, in_forma, in_resp, in_obs.strip()))
+                                         (dono, in_desc.strip(), aplicar_emoji(in_cat), in_val, in_venc.strftime("%Y-%m-%d"), in_stat, in_forma, in_resp, in_obs.strip()))
                             conn.commit()
                             conn.close()
                             limpar_cache()
                             st.rerun()
 
-        with col_act2:
-            busca = st.text_input("🔎 Busca rápida por descrição, categoria ou mês (Ex: 2026-11, Moradia, Nubank):", placeholder="Digite para filtrar instantaneamente ou deixe vazio para ver tudo...", label_visibility="collapsed")
+        # Aplica o filtro de mês selecionado
+        df_dono = df_dono_total.copy()
+        if mes_escolhido != "TODOS":
+            df_dono = df_dono[df_dono["mes_ano"] == mes_escolhido]
 
         if busca.strip():
             termo = busca.strip().lower()
             df_dono = df_dono[
                 df_dono["descricao"].str.lower().str.contains(termo, na=False) |
                 df_dono["categoria"].str.lower().str.contains(termo, na=False) |
-                df_dono["mes_ano"].str.lower().str.contains(termo, na=False) |
                 df_dono["status"].str.lower().str.contains(termo, na=False)
             ]
 
-        # Editor de Dados Otimizado dentro de um Form para NÃO recarregar a cada clique na célula
-        with st.form(f"form_tabela_{dono}"):
-            col_h1, col_h2 = st.columns([3, 1])
-            col_h1.markdown("##### 📋 Lista Completa de Contas (Edite direto na tabela)")
-            btn_salvar_tab = col_h2.form_submit_button("💾 Salvar Edições / Exclusões", type="primary", use_container_width=True)
+        # KPIs e Edição de Renda Mensal
+        tot_geral = df_dono["valor"].sum()
+        tot_pago = df_dono[df_dono["status"].str.lower() == "pago"]["valor"].sum()
+        tot_pend = df_dono[df_dono["status"].str.lower().isin(["pendente", "atrasado"])]["valor"].sum()
 
-            df_prep = df_dono[["id", "descricao", "categoria", "valor", "vencimento_dt", "status", "forma_pagamento", "responsavel", "observacoes"]].copy()
-            df_prep["vencimento_dt"] = df_prep["vencimento_dt"].dt.date
-            df_prep["Excluir?"] = False
+        k1, k2, k3, k4 = st.columns(4)
+        with k1:
+            sub_mes = formatar_mes_abrev(mes_escolhido) if mes_escolhido != "TODOS" else "Todos os meses"
+            render_card(f"Total ({sub_mes})", formatar_moeda(tot_geral), f"{len(df_dono)} lançamentos", dark=True)
+        with k2:
+            render_card("✅ Total Pago", formatar_moeda(tot_pago), "Contas quitadas")
+        with k3:
+            render_card("⏳ Pendente / Atrasado", formatar_moeda(tot_pend), "Aguardando pagamento")
+        with k4:
+            render_card("💵 Renda Mensal", formatar_moeda(ganho_dono), "Saldo livre: " + formatar_moeda(ganho_dono - tot_geral))
+            with st.popover("✏️ Alterar Renda Mensal", use_container_width=True):
+                novo_ganho = st.number_input("Nova Renda Mensal (R$):", value=ganho_dono, step=100.0, format="%.2f", key=f"in_renda_{dono}")
+                if st.button("💾 Salvar Renda", type="primary", use_container_width=True, key=f"btn_renda_{dono}"):
+                    conn = get_conn()
+                    conn.execute("INSERT OR REPLACE INTO ganhos (aba_dono, ganho_mensal) VALUES (?, ?)", (dono, float(novo_ganho)))
+                    conn.commit()
+                    conn.close()
+                    limpar_cache()
+                    st.rerun()
 
-            df_editado = st.data_editor(
-                df_prep,
-                hide_index=True,
-                use_container_width=True,
-                disabled=["id"],
-                column_config={
-                    "id": None,
-                    "descricao": st.column_config.TextColumn("Descrição", required=True),
-                    "categoria": st.column_config.SelectboxColumn("Categoria", options=lista_categorias, required=True),
-                    "valor": st.column_config.NumberColumn("Valor", format="R$ %.2f", required=True),
-                    "vencimento_dt": st.column_config.DateColumn("Vencimento", format="DD/MM/YYYY", required=True),
-                    "status": st.column_config.SelectboxColumn("Status", options=lista_status, required=True),
-                    "forma_pagamento": st.column_config.SelectboxColumn("Forma Pagto", options=lista_formas, required=True),
-                    "responsavel": st.column_config.SelectboxColumn("Responsável", options=responsaveis_opcoes, required=True),
-                    "observacoes": st.column_config.TextColumn("Observações"),
-                    "Excluir?": st.column_config.CheckboxColumn("🗑️ Excluir", default=False)
-                },
-                key=f"grid_{dono}"
-            )
+        # Paginação: exibe os primeiros N resultados (20 por padrão) sem prender em container com scroll
+        total_registros = len(df_dono)
+        limite_atual = st.session_state[chave_limite]
+        df_paginado = df_dono.head(limite_atual).copy()
 
-            if btn_salvar_tab:
-                conn = get_conn()
-                c = conn.cursor()
-                for _, row in df_editado.iterrows():
-                    rec_id = int(row["id"])
-                    if row["Excluir?"]:
-                        c.execute("DELETE FROM contas WHERE id = ?", (rec_id,))
-                    else:
-                        v_dt = row["vencimento_dt"].strftime("%Y-%m-%d") if pd.notnull(row["vencimento_dt"]) else date.today().strftime("%Y-%m-%d")
-                        c.execute("""UPDATE contas SET descricao=?, categoria=?, valor=?, vencimento=?, status=?, forma_pagamento=?, responsavel=?, observacoes=?
-                                     WHERE id=?""", (
-                            str(row["descricao"]), aplicar_emoji(row["categoria"]), float(row["valor"]), v_dt,
-                            str(row["status"]), str(row["forma_pagamento"]), str(row["responsavel"]),
-                            "" if pd.isna(row["observacoes"]) else str(row["observacoes"]), rec_id
-                        ))
-                conn.commit()
-                conn.close()
-                limpar_cache()
-                st.toast("Alterações salvas instantaneamente!", icon="✅")
+        col_t1, col_t2 = st.columns([3, 1])
+        col_t1.markdown(f"##### 📋 Contas Exibidas ({len(df_paginado)} de {total_registros})")
+        btn_salvar_tab = col_t2.button("💾 Salvar Alterações", type="primary", use_container_width=True, key=f"save_top_{dono}")
+
+        df_prep = df_paginado[["id", "vencimento_dt", "descricao", "categoria", "valor", "status", "forma_pagamento", "responsavel", "observacoes"]].copy()
+        df_prep["mes_ref"] = df_prep["vencimento_dt"].apply(formatar_data_abrev)
+        df_prep["vencimento_dt"] = df_prep["vencimento_dt"].dt.date
+        df_prep["Excluir?"] = False
+
+        # Calcula altura exata para que a tabela nunca fique presa em container com barra de rolagem vertical
+        altura_livre = max(140, (len(df_prep) + 1) * 36 + 12)
+
+        df_editado = st.data_editor(
+            df_prep[["id", "mes_ref", "vencimento_dt", "descricao", "categoria", "valor", "status", "forma_pagamento", "responsavel", "observacoes", "Excluir?"]],
+            hide_index=True,
+            use_container_width=True,
+            height=altura_livre,
+            disabled=["id", "mes_ref"],
+            column_config={
+                "id": None,
+                "mes_ref": st.column_config.TextColumn("Data (/MÊS)", width="small"),
+                "vencimento_dt": st.column_config.DateColumn("Vencimento", format="DD/MM/YYYY", required=True),
+                "descricao": st.column_config.TextColumn("Descrição", required=True),
+                "categoria": st.column_config.SelectboxColumn("Categoria", options=lista_categorias, required=True),
+                "valor": st.column_config.NumberColumn("Valor", format="R$ %.2f", required=True),
+                "status": st.column_config.SelectboxColumn("Status", options=lista_status, required=True),
+                "forma_pagamento": st.column_config.SelectboxColumn("Forma Pagto", options=lista_formas, required=True),
+                "responsavel": st.column_config.SelectboxColumn("Responsável", options=responsaveis_opcoes, required=True),
+                "observacoes": st.column_config.TextColumn("Observações"),
+                "Excluir?": st.column_config.CheckboxColumn("🗑️", default=False)
+            },
+            key=f"grid_{dono}_{mes_escolhido}_{limite_atual}"
+        )
+
+        if btn_salvar_tab:
+            conn = get_conn()
+            c = conn.cursor()
+            for _, row in df_editado.iterrows():
+                rec_id = int(row["id"])
+                if row["Excluir?"]:
+                    c.execute("DELETE FROM contas WHERE id = ?", (rec_id,))
+                else:
+                    v_dt = row["vencimento_dt"].strftime("%Y-%m-%d") if pd.notnull(row["vencimento_dt"]) else date.today().strftime("%Y-%m-%d")
+                    c.execute("""UPDATE contas SET descricao=?, categoria=?, valor=?, vencimento=?, status=?, forma_pagamento=?, responsavel=?, observacoes=?
+                                 WHERE id=?""", (
+                        str(row["descricao"]), aplicar_emoji(row["categoria"]), float(row["valor"]), v_dt,
+                        str(row["status"]), str(row["forma_pagamento"]), str(row["responsavel"]),
+                        "" if pd.isna(row["observacoes"]) else str(row["observacoes"]), rec_id
+                    ))
+            conn.commit()
+            conn.close()
+            limpar_cache()
+            st.toast("Alterações salvas com sucesso!", icon="✅")
+            st.rerun()
+
+        # Botão para mostrar os próximos 20 resultados se houver mais contas
+        if total_registros > limite_atual:
+            restantes = total_registros - limite_atual
+            prox_lote = min(20, restantes)
+            if st.button(f"🔽 Mostrar próximos {prox_lote} resultados ({restantes} restantes)", use_container_width=True, key=f"more_{dono}"):
+                st.session_state[chave_limite] += 20
+                st.rerun()
+        elif limite_atual > 20 and total_registros > 20:
+            if st.button("🔼 Mostrar apenas os 20 primeiros", use_container_width=True, key=f"less_{dono}"):
+                st.session_state[chave_limite] = 20
                 st.rerun()
 
     secao_crud_contas(dono_atual)
 
 # ==========================================
-# 5. INVESTIMENTOS (TODOS VISÍVEIS + CRUD RÁPIDO)
+# 5. INVESTIMENTOS
 # ==========================================
 elif menu == "📈 Investimentos":
     st.title("📈 Patrimônio & Investimentos")
@@ -619,18 +788,17 @@ elif menu == "📈 Investimentos":
     secao_investimentos()
 
 # ==========================================
-# 6. CATEGORIAS COM EMOJIS & CONFIGURAÇÕES
+# 6. CATEGORIAS & OPÇÕES
 # ==========================================
 elif menu == "🏷️ Categorias & Opções":
     st.title("🏷️ Personalizar Categorias & Pagamentos")
-    st.caption("Ao criar uma nova categoria, você pode colocar um emoji ou deixar que o Diviapp adicione automaticamente.")
 
     col1, col2, col3 = st.columns(3)
     for col, titulo, tipo_p in [(col1, "Categorias (com Emoji)", "categoria"), (col2, "Status", "status"), (col3, "Formas de Pagamento", "forma_pagamento")]:
         with col:
             st.markdown(f"#### {titulo}")
             with st.form(f"add_p_{tipo_p}", clear_on_submit=True):
-                nv = st.text_input("Adicionar item:", placeholder="Ex: 🍕 Delivery")
+                nv = st.text_input("Adicionar item:", placeholder="Ex: Delivery")
                 if st.form_submit_button("➕ Adicionar", use_container_width=True) and nv.strip():
                     val_f = aplicar_emoji(nv.strip()) if tipo_p == "categoria" else nv.strip()
                     conn = get_conn()
