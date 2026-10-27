@@ -8,38 +8,38 @@ from datetime import date
 import io
 
 # ==========================================
-# CONFIGURAÇÃO DA PÁGINA E CSS UI/UX PROFISSIONAL
+# CONFIGURAÇÃO DA PÁGINA E CSS UI/UX MOBILE-FIRST PROFISSIONAL
 # ==========================================
-st.set_page_config(page_title="Diviapp Pro", page_icon="💎", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Diviapp Pro", page_icon="💎", layout="wide", initial_sidebar_state="auto")
 
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap');
 
     :root {
-        --bg-main: #F8FAFC;
+        --bg-main: #F4F7F6;
         --bg-surface: #FFFFFF;
-        --bg-sidebar: #0F172A;
-        --bg-sidebar-hover: rgba(79, 70, 229, 0.16);
+        --bg-sidebar: #0E1626;
+        --bg-sidebar-hover: rgba(56, 189, 248, 0.12);
         --color-primary: #0F172A;
-        --color-accent: #10B981;
-        --color-accent-hover: #059669;
-        --color-secondary: #4F46E5;
+        --color-accent: #059669;
+        --color-accent-hover: #047857;
+        --color-secondary: #3B82F6;
         --text-primary: #1E293B;
         --text-secondary: #64748B;
         --text-on-dark: #F8FAFC;
-        --status-ok-bg: #ECFDF5;
-        --status-ok-text: #047857;
-        --status-warn-bg: #FFFBEB;
-        --status-warn-text: #B45309;
-        --status-danger-bg: #FEF2F2;
-        --status-danger-text: #B91C1C;
+        --status-ok-bg: #D1FAE5;
+        --status-ok-text: #065F46;
+        --status-warn-bg: #FEF3C7;
+        --status-warn-text: #92400E;
+        --status-danger-bg: #FEE2E2;
+        --status-danger-text: #991B1B;
         --border-subtle: #E2E8F0;
-        --radius-md: 12px;
-        --radius-lg: 18px;
-        --shadow-soft: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 4px 10px -2px rgba(15, 23, 42, 0.02);
-        --shadow-hover: 0 18px 32px -8px rgba(15, 23, 42, 0.08);
-        --transition-fast: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        --radius-md: 10px;
+        --radius-lg: 16px;
+        --shadow-soft: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+        --shadow-hover: 0 12px 28px -6px rgba(15, 23, 42, 0.1);
+        --transition-fast: all 0.2s ease-in-out;
     }
 
     html, body, [class*="css"] {
@@ -51,64 +51,91 @@ st.markdown("""
 
     .main {
         background-color: var(--bg-main) !important;
-        padding-top: 1.5rem;
+        padding-top: 1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 
     h1, h2, h3, .card-value {
         font-family: 'Outfit', sans-serif !important;
         color: var(--color-primary) !important;
-        letter-spacing: -0.025em;
+        letter-spacing: -0.02em;
+    }
+
+    /* Otimizações Mobile Responsivas */
+    @media (max-width: 768px) {
+        .main {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            padding-top: 0.5rem;
+        }
+        h1 {
+            font-size: 1.5rem !important;
+        }
+        h2 {
+            font-size: 1.25rem !important;
+        }
+        h3 {
+            font-size: 1.1rem !important;
+        }
+        .card-value {
+            font-size: 1.35rem !important;
+        }
+        .pro-card, .pro-card-dark {
+            padding: 16px 18px !important;
+            margin-bottom: 10px !important;
+        }
     }
     
     /* Cards Executivos */
     .pro-card {
         background: var(--bg-surface);
         border-radius: var(--radius-lg);
-        padding: 24px 26px;
+        padding: 22px 24px;
         border: 1px solid var(--border-subtle);
         box-shadow: var(--shadow-soft);
         transition: var(--transition-fast);
-        margin-bottom: 16px;
+        margin-bottom: 14px;
     }
     .pro-card:hover {
-        transform: translateY(-3px);
+        transform: translateY(-2px);
         box-shadow: var(--shadow-hover);
         border-color: #CBD5E1;
     }
     .pro-card-dark {
-        background: linear-gradient(135deg, var(--color-primary) 0%, #1E293B 60%, #312E81 100%);
+        background: linear-gradient(135deg, #0F172A 0%, #1E293B 70%, #312E81 100%);
         color: var(--text-on-dark);
         border-radius: var(--radius-lg);
-        padding: 24px 26px;
-        box-shadow: 0 14px 28px -6px rgba(15, 23, 42, 0.25);
-        margin-bottom: 16px;
+        padding: 22px 24px;
+        box-shadow: 0 10px 24px -6px rgba(15, 23, 42, 0.2);
+        margin-bottom: 14px;
         border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .pro-card-dark .card-value {
         color: #FFFFFF !important;
     }
     .card-label {
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.05em;
         color: var(--text-secondary);
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
     .pro-card-dark .card-label {
         color: #94A3B8;
     }
     .card-value {
-        font-size: 1.8rem;
+        font-size: 1.7rem;
         font-weight: 800;
         margin: 0;
         line-height: 1.15;
         font-variant-numeric: tabular-nums;
     }
     .card-sub {
-        font-size: 0.84rem;
-        margin-top: 12px;
-        padding-top: 10px;
+        font-size: 0.82rem;
+        margin-top: 10px;
+        padding-top: 8px;
         border-top: 1px solid rgba(226, 232, 240, 0.6);
         color: var(--text-secondary);
     }
@@ -117,10 +144,10 @@ st.markdown("""
         color: #CBD5E1;
     }
     
-    /* Badges de Status */
-    .badge-ok { background: var(--status-ok-bg); color: var(--status-ok-text); padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 0.75rem; }
-    .badge-warn { background: var(--status-warn-bg); color: var(--status-warn-text); padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 0.75rem; }
-    .badge-danger { background: var(--status-danger-bg); color: var(--status-danger-text); padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 0.75rem; }
+    /* Badges de Status Modernos */
+    .badge-ok { background: var(--status-ok-bg); color: var(--status-ok-text); padding: 3px 10px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; display: inline-block; }
+    .badge-warn { background: var(--status-warn-bg); color: var(--status-warn-text); padding: 3px 10px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; display: inline-block; }
+    .badge-danger { background: var(--status-danger-bg); color: var(--status-danger-text); padding: 3px 10px; border-radius: 999px; font-weight: 600; font-size: 0.74rem; display: inline-block; }
     
     /* Sidebar Redesenhada */
     div[data-testid="stSidebar"] {
@@ -131,26 +158,26 @@ st.markdown("""
         color: #F8FAFC !important;
     }
     div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: var(--radius-md);
-        padding: 14px 18px !important;
-        margin-bottom: 10px !important;
+        padding: 12px 16px !important;
+        margin-bottom: 8px !important;
         transition: var(--transition-fast);
         cursor: pointer;
     }
     div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label:hover {
         background: var(--bg-sidebar-hover);
-        border-color: var(--color-secondary);
-        transform: translateX(4px);
+        border-color: rgba(56, 189, 248, 0.4);
+        transform: translateX(3px);
     }
     div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label p {
-        font-size: 1.12rem !important;
+        font-size: 1.05rem !important;
         font-weight: 600 !important;
-        letter-spacing: 0.2px;
+        letter-spacing: 0.1px;
     }
     div[data-testid="stSidebar"] hr {
-        border-color: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -192,7 +219,7 @@ def calcular_mes_adjacente(ano, mes, delta):
     return f"{novo_ano:04d}-{novo_mes:02d}"
 
 # ==========================================
-# MAPA DE EMOJIS INTELIGENTE (CORRIGIDO ⚡)
+# MAPA DE EMOJIS INTELIGENTE
 # ==========================================
 EMOJI_MAP = {
     "moradia": "🏠", "aluguel": "🏠", "casa": "🏠",
@@ -379,21 +406,21 @@ hoje = date.today()
 mes_atual_str = hoje.strftime("%Y-%m")
 
 # ==========================================
-# SIDEBAR COM LOGO MODERNA
+# SIDEBAR COM LOGO MODERNA E RECOLHIMENTO AUTOMÁTICO EM MOBILE
 # ==========================================
 with st.sidebar:
     st.markdown("""
-        <div style="display: flex; align-items: center; gap: 14px; padding: 14px 12px 22px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 18px;">
-            <div style="background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%); width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35); flex-shrink: 0;">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 10px 8px 18px 8px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px;">
+            <div style="background: linear-gradient(135deg, #3B82F6 0%, #059669 100%); width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3); flex-shrink: 0;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                     <path d="M2 17l10 5 10-5"/>
                     <path d="M2 12l10 5 10-5"/>
                 </svg>
             </div>
             <div>
-                <div style="font-size: 1.45rem; font-weight: 800; letter-spacing: -0.5px; color: #FFFFFF; line-height: 1.1;">Diviapp<span style="color:#38BDF8;">Pro</span></div>
-                <div style="font-size: 0.82rem; font-weight: 500; color: #94A3B8; margin-top: 3px;">Henrique & Camila</div>
+                <div style="font-size: 1.35rem; font-weight: 800; letter-spacing: -0.4px; color: #FFFFFF; line-height: 1.1;">Diviapp<span style="color:#38BDF8;">Pro</span></div>
+                <div style="font-size: 0.78rem; font-weight: 500; color: #94A3B8; margin-top: 2px;">Henrique & Camila</div>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -471,11 +498,14 @@ if menu == "🚀 Visão Geral":
     patrimonio = df_inv["saldo_atual"].sum() if not df_inv.empty else 0.0
     perc_quitado = (total_pago / total_geral * 100) if total_geral > 0 else 0.0
 
-    c1, c2, c3, c4 = st.columns(4)
+    # Layout responsivo em colunas adaptadas para mobile via Streamlit grid nativo
+    c1, c2 = st.columns(2)
     with c1:
         render_card("💰 Total no Período", formatar_moeda(total_geral), f"🧔🏻 H: {formatar_moeda(total_h)} | 👩🏻 C: {formatar_moeda(total_c)}", dark=True)
     with c2:
         render_card("✅ Total Quitado", formatar_moeda(total_pago), f"<span class='badge-ok'>{perc_quitado:.1f}% pago do total</span>")
+
+    c3, c4 = st.columns(2)
     with c3:
         render_card("⏳ Falta Pagar (Pendente)", formatar_moeda(total_pendente), f"<span class='badge-warn'>{len(df_dash[df_dash['status'].str.lower()=='pendente'])} contas em aberto</span>")
     with c4:
@@ -486,33 +516,33 @@ if menu == "🚀 Visão Geral":
     df_alertas = df_dash[df_dash["status"].str.lower().isin(["atrasado", "pendente"])].sort_values(by="vencimento_dt")
     if not df_alertas.empty:
         st.markdown("### 🔔 Atenção Imediata: Próximas Contas a Pagar")
-        cols_alerta = st.columns(min(4, len(df_alertas)))
+        cols_alerta = st.columns(min(2, len(df_alertas)))
         for idx, (_, row_al) in enumerate(df_alertas.head(4).iterrows()):
-            with cols_alerta[idx]:
+            with cols_alerta[idx % 2]:
                 cor_borda = "#EF4444" if str(row_al["status"]).lower() == "atrasado" else "#F59E0B"
                 venc_fmt = f"{row_al['vencimento_dt'].day:02d}{MESES_ABREV.get(row_al['vencimento_dt'].month, '')}" if pd.notnull(row_al["vencimento_dt"]) else "-"
                 st.markdown(f"""
-                    <div style="background:white; border-left: 5px solid {cor_borda}; padding: 14px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-                        <div style="font-size:0.75rem; color:#64748B; font-weight:600;">{row_al['aba_dono']} • Vence {venc_fmt}</div>
-                        <div style="font-size:1rem; font-weight:700; color:#1E2A4F; margin:4px 0;">{row_al['descricao']}</div>
-                        <div style="font-size:0.85rem; color:#475569;">{row_al['categoria']}</div>
-                        <div style="font-size:1.15rem; font-weight:700; color:{cor_borda}; margin-top:6px;">{formatar_moeda(row_al['valor'])}</div>
+                    <div style="background:white; border-left: 4px solid {cor_borda}; padding: 12px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-top: 1px solid #E2E8F0; border-right: 1px solid #E2E8F0; border-bottom: 1px solid #E2E8F0; margin-bottom: 8px;">
+                        <div style="font-size:0.72rem; color:#64748B; font-weight:600;">{row_al['aba_dono']} • Vence {venc_fmt}</div>
+                        <div style="font-size:0.95rem; font-weight:700; color:#1E293B; margin:4px 0;">{row_al['descricao']}</div>
+                        <div style="font-size:0.8rem; color:#475569;">{row_al['categoria']}</div>
+                        <div style="font-size:1.05rem; font-weight:700; color:{cor_borda}; margin-top:4px;">{formatar_moeda(row_al['valor'])}</div>
                     </div>
                 """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     if not df_dash.empty:
-        g1, g2 = st.columns([1.4, 1])
+        g1, g2 = st.columns([1, 1])
         with g1:
             st.markdown("<div class='pro-card'>", unsafe_allow_html=True)
             st.subheader("📊 Despesas por Categoria")
             df_cat_g = df_dash.groupby("categoria", as_index=False)["valor"].sum().sort_values(by="valor", ascending=True)
             fig_cat = px.bar(
                 df_cat_g, x="valor", y="categoria", orientation="h", text_auto=".2s",
-                color="valor", color_continuous_scale=["#60A5FA", "#1E2A4F"]
+                color="valor", color_continuous_scale=["#93C5FD", "#1E293B"]
             )
-            fig_cat.update_layout(showlegend=False, height=380, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False, plot_bgcolor="rgba(0,0,0,0)")
+            fig_cat.update_layout(showlegend=False, height=320, margin=dict(l=0, r=0, t=10, b=0), coloraxis_showscale=False, plot_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig_cat, use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
@@ -522,9 +552,9 @@ if menu == "🚀 Visão Geral":
             df_ev = df_dash.groupby(["mes_abrev", "aba_dono"], as_index=False)["valor"].sum()
             fig_ev = px.bar(
                 df_ev, x="mes_abrev", y="valor", color="aba_dono", barmode="group", text_auto=".2s",
-                color_discrete_map={"Henrique": "#1E2A4F", "Camila": "#EC4899"}
+                color_discrete_map={"Henrique": "#1E293B", "Camila": "#EC4899"}
             )
-            fig_ev.update_layout(height=380, margin=dict(l=0, r=0, t=10, b=0), plot_bgcolor="rgba(0,0,0,0)", legend_title_text="")
+            fig_ev.update_layout(height=320, margin=dict(l=0, r=0, t=10, b=0), plot_bgcolor="rgba(0,0,0,0)", legend_title_text="")
             st.plotly_chart(fig_ev, use_container_width=True)
             st.markdown("</div>", unsafe_allow_html=True)
     else:
@@ -546,20 +576,18 @@ elif menu == "📅 Resumo Mensal":
         ("⏩ Próximo Mês", proximo_mes, False)
     ]
 
-    cols_mes = st.columns(3)
-    for i, (rotulo, m_cod, destaque_escuro) in enumerate(meses_foco):
+    for rotulo, m_cod, destaque_escuro in meses_foco:
         df_m = df_contas[df_contas["mes_ano"] == m_cod]
         tot_m = df_m["valor"].sum()
         pago_m = df_m[df_m["status"].str.lower() == "pago"]["valor"].sum()
         pend_m = tot_m - pago_m
         perc_m = (pago_m / tot_m * 100) if tot_m > 0 else 0.0
-        with cols_mes[i]:
-            render_card(
-                f"{rotulo} ({formatar_mes_abrev(m_cod)})",
-                formatar_moeda(tot_m),
-                f"✅ Pago: {formatar_moeda(pago_m)} ({perc_m:.0f}%)<br>⏳ Falta: <b>{formatar_moeda(pend_m)}</b>",
-                dark=destaque_escuro
-            )
+        render_card(
+            f"{rotulo} ({formatar_mes_abrev(m_cod)})",
+            formatar_moeda(tot_m),
+            f"✅ Pago: {formatar_moeda(pago_m)} ({perc_m:.0f}%) | ⏳ Falta: <b>{formatar_moeda(pend_m)}</b>",
+            dark=destaque_escuro
+        )
 
     st.markdown("### 🏷️ Comparativo de Categorias por Mês")
     if not df_contas.empty:
@@ -600,37 +628,34 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
         opcoes_mes_dono = ["TODOS"] + meses_dono
         idx_padrao = opcoes_mes_dono.index(mes_atual_str) if mes_atual_str in opcoes_mes_dono else 0
 
-        col_f_mes, col_f_busca, col_btn_mais = st.columns([1.3, 2.4, 0.35])
+        col_f_mes, col_f_busca, col_btn_mais = st.columns([1.2, 2, 0.6])
         with col_f_mes:
             mes_escolhido = st.selectbox(
                 "📅 Mês",
                 options=opcoes_mes_dono,
                 index=idx_padrao,
-                format_func=lambda x: "🗓️ Todos os Meses" if x == "TODOS" else formatar_mes_abrev(x),
+                format_func=lambda x: "🗓️ Todos" if x == "TODOS" else formatar_mes_abrev(x),
                 label_visibility="collapsed",
                 key=f"sel_mes_{dono}"
             )
         with col_f_busca:
             busca = st.text_input(
                 "🔎 Filtrar",
-                placeholder="🔎 Buscar por descrição, categoria ou status...",
+                placeholder="🔎 Buscar...",
                 label_visibility="collapsed",
                 key=f"busca_{dono}"
             )
         with col_btn_mais:
-            with st.popover("➕", use_container_width=True):
+            with st.popover("➕ Nova", use_container_width=True):
                 with st.form(f"form_rapido_{dono}", clear_on_submit=True):
                     st.markdown(f"**Nova Conta ({dono})**")
-                    in_desc = st.text_input("Descrição *", placeholder="Ex: Energia, Mercado...")
-                    c_f1, c_f2 = st.columns(2)
-                    in_cat = c_f1.selectbox("Categoria", lista_categorias)
-                    in_val = c_f2.number_input("Valor (R$)", min_value=0.0, step=10.0, format="%.2f")
-                    c_f3, c_f4 = st.columns(2)
-                    in_venc = c_f3.date_input("Vencimento", value=date.today())
-                    in_stat = c_f4.selectbox("Status", lista_status)
-                    c_f5, c_f6 = st.columns(2)
-                    in_forma = c_f5.selectbox("Pagamento", lista_formas)
-                    in_resp = c_f6.selectbox("Responsável", responsaveis_opcoes, index=responsaveis_opcoes.index(dono))
+                    in_desc = st.text_input("Descrição *", placeholder="Ex: Energia...")
+                    in_cat = st.selectbox("Categoria", lista_categorias)
+                    in_val = st.number_input("Valor (R$)", min_value=0.0, step=10.0, format="%.2f")
+                    in_venc = st.date_input("Vencimento", value=date.today())
+                    in_stat = st.selectbox("Status", lista_status)
+                    in_forma = st.selectbox("Pagamento", lista_formas)
+                    in_resp = st.selectbox("Responsável", responsaveis_opcoes, index=responsaveis_opcoes.index(dono))
                     in_obs = st.text_input("Observações")
 
                     if st.form_submit_button("💾 Salvar", type="primary", use_container_width=True):
@@ -660,18 +685,20 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
         tot_pago = df_dono[df_dono["status"].str.lower() == "pago"]["valor"].sum()
         tot_pend = df_dono[df_dono["status"].str.lower().isin(["pendente", "atrasado"])]["valor"].sum()
 
-        k1, k2, k3, k4 = st.columns(4)
+        k1, k2 = st.columns(2)
         with k1:
-            sub_mes = formatar_mes_abrev(mes_escolhido) if mes_escolhido != "TODOS" else "Todos os meses"
-            render_card(f"Total ({sub_mes})", formatar_moeda(tot_geral), f"{len(df_dono)} lançamentos", dark=True)
+            sub_mes = formatar_mes_abrev(mes_escolhido) if mes_escolhido != "TODOS" else "Geral"
+            render_card(f"Total ({sub_mes})", formatar_moeda(tot_geral), f"{len(df_dono)} contas", dark=True)
         with k2:
-            render_card("✅ Total Pago", formatar_moeda(tot_pago), "Contas quitadas")
+            render_card("✅ Total Pago", formatar_moeda(tot_pago), "Quitadas")
+
+        k3, k4 = st.columns(2)
         with k3:
-            render_card("⏳ Pendente / Atrasado", formatar_moeda(tot_pend), "Aguardando pagamento")
+            render_card("⏳ Pendente", formatar_moeda(tot_pend), "Em aberto")
         with k4:
-            render_card("💵 Renda Mensal", formatar_moeda(ganho_dono), "Saldo livre: " + formatar_moeda(ganho_dono - tot_geral))
-            with st.popover("✏️ Alterar Renda Mensal", use_container_width=True):
-                novo_ganho = st.number_input("Nova Renda Mensal (R$):", value=ganho_dono, step=100.0, format="%.2f", key=f"in_renda_{dono}")
+            render_card("💵 Renda", formatar_moeda(ganho_dono), "Livre: " + formatar_moeda(ganho_dono - tot_geral))
+            with st.popover("✏️ Alterar Renda", use_container_width=True):
+                novo_ganho = st.number_input("Renda Mensal (R$):", value=ganho_dono, step=100.0, format="%.2f", key=f"in_renda_{dono}")
                 if st.button("💾 Salvar Renda", type="primary", use_container_width=True, key=f"btn_renda_{dono}"):
                     conn = get_conn()
                     conn.execute("INSERT OR REPLACE INTO ganhos (aba_dono, ganho_mensal) VALUES (?, ?)", (dono, float(novo_ganho)))
@@ -684,9 +711,9 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
         limite_atual = st.session_state[chave_limite]
         df_paginado = df_dono.head(limite_atual).copy()
 
-        col_t1, col_t2 = st.columns([3, 1])
-        col_t1.markdown(f"##### 📋 Contas Exibidas ({len(df_paginado)} de {total_registros})")
-        btn_salvar_tab = col_t2.button("💾 Salvar Alterações", type="primary", use_container_width=True, key=f"save_top_{dono}")
+        col_t1, col_t2 = st.columns([1.5, 1])
+        col_t1.markdown(f"##### 📋 Contas ({len(df_paginado)}/{total_registros})")
+        btn_salvar_tab = col_t2.button("💾 Salvar", type="primary", use_container_width=True, key=f"save_top_{dono}")
 
         df_prep = df_paginado[["id", "vencimento_dt", "descricao", "categoria", "valor", "status", "forma_pagamento", "responsavel", "observacoes"]].copy()
         df_prep["mes_ref"] = df_prep["vencimento_dt"].apply(formatar_data_abrev)
@@ -703,15 +730,15 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
             disabled=["id", "mes_ref"],
             column_config={
                 "id": None,
-                "mes_ref": st.column_config.TextColumn("Data (/MÊS)", width="small"),
+                "mes_ref": st.column_config.TextColumn("Data", width="small"),
                 "vencimento_dt": st.column_config.DateColumn("Vencimento", format="DD/MM/YYYY", required=True),
                 "descricao": st.column_config.TextColumn("Descrição", required=True),
                 "categoria": st.column_config.SelectboxColumn("Categoria", options=lista_categorias, required=True),
                 "valor": st.column_config.NumberColumn("Valor", format="R$ %.2f", required=True),
                 "status": st.column_config.SelectboxColumn("Status", options=lista_status, required=True),
-                "forma_pagamento": st.column_config.SelectboxColumn("Forma Pagto", options=lista_formas, required=True),
-                "responsavel": st.column_config.SelectboxColumn("Responsável", options=responsaveis_opcoes, required=True),
-                "observacoes": st.column_config.TextColumn("Observações"),
+                "forma_pagamento": st.column_config.SelectboxColumn("Pagto", options=lista_formas, required=True),
+                "responsavel": st.column_config.SelectboxColumn("Resp.", options=responsaveis_opcoes, required=True),
+                "observacoes": st.column_config.TextColumn("Obs"),
                 "Excluir?": st.column_config.CheckboxColumn("🗑️", default=False)
             },
             key=f"grid_{dono}_{mes_escolhido}_{limite_atual}"
@@ -735,18 +762,13 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
             conn.commit()
             conn.close()
             limpar_cache()
-            st.toast("Alterações salvas com sucesso!", icon="✅")
+            st.toast("Alterações salvas!", icon="✅")
             st.rerun()
 
         if total_registros > limite_atual:
             restantes = total_registros - limite_atual
-            prox_lote = min(20, restantes)
-            if st.button(f"🔽 Mostrar próximos {prox_lote} resultados ({restantes} restantes)", use_container_width=True, key=f"more_{dono}"):
+            if st.button(f"🔽 Mais {min(20, restantes)} ({restantes} restantes)", use_container_width=True, key=f"more_{dono}"):
                 st.session_state[chave_limite] += 20
-                st.rerun()
-        elif limite_atual > 20 and total_registros > 20:
-            if st.button("🔼 Mostrar apenas os 20 primeiros", use_container_width=True, key=f"less_{dono}"):
-                st.session_state[chave_limite] = 20
                 st.rerun()
 
     secao_crud_contas(dono_atual)
@@ -765,24 +787,25 @@ elif menu == "📈 Investimentos":
         tot_gan = df_i_all["ganho_mes"].sum() if not df_i_all.empty else 0.0
         rent_m = (tot_gan / tot_ap * 100) if tot_ap > 0 else 0.0
 
-        c1, c2, c3, c4 = st.columns(4)
-        with c1: render_card("🏦 Saldo Atual Acumulado", formatar_moeda(tot_sal), "Patrimônio Total", dark=True)
-        with c2: render_card("💰 Total Aplicado", formatar_moeda(tot_ap), "Saído do bolso")
-        with c3: render_card("🚀 Rendimento Acumulado", formatar_moeda(tot_gan), "Lucro líquido")
-        with c4: render_card("📊 Rentabilidade Geral", f"{rent_m:.2f}%", "Rendimento sobre aplicado")
+        c1, c2 = st.columns(2)
+        with c1: render_card("🏦 Saldo Atual", formatar_moeda(tot_sal), "Patrimônio", dark=True)
+        with c2: render_card("💰 Aplicado", formatar_moeda(tot_ap), "Investido")
 
-        with st.popover("➕ Cadastrar Novo Investimento", use_container_width=False):
+        c3, c4 = st.columns(2)
+        with c3: render_card("🚀 Rendimento", formatar_moeda(tot_gan), "Lucro líquido")
+        with c4: render_card("📊 Rentabilidade", f"{rent_m:.2f}%", "Retorno")
+
+        with st.popover("➕ Novo Investimento", use_container_width=True):
             with st.form("form_inv_fast", clear_on_submit=True):
-                c_i1, c_i2 = st.columns(2)
-                inv_dt = c_i1.date_input("Data", value=date.today())
-                inv_pes = c_i2.selectbox("Titular", ["Casal", "Henrique", "Camila"])
-                inv_tipo = c_i1.text_input("Tipo (Ex: CDB, Tesouro, Caixinha) *")
-                inv_inst = c_i2.text_input("Instituição (Ex: Nubank, XP, Inter) *")
-                inv_ap = c_i1.number_input("Valor Aplicado (R$)", min_value=0.0, step=100.0)
-                inv_sal = c_i2.number_input("Saldo Atual (R$)", min_value=0.0, step=100.0)
+                inv_dt = st.date_input("Data", value=date.today())
+                inv_pes = st.selectbox("Titular", ["Casal", "Henrique", "Camila"])
+                inv_tipo = st.text_input("Tipo (Ex: CDB, Tesouro) *")
+                inv_inst = st.text_input("Instituição (Ex: Nubank) *")
+                inv_ap = st.number_input("Valor Aplicado (R$)", min_value=0.0, step=100.0)
+                inv_sal = st.number_input("Saldo Atual (R$)", min_value=0.0, step=100.0)
                 inv_obs = st.text_input("Observações")
 
-                if st.form_submit_button("💾 Adicionar Investimento", type="primary", use_container_width=True):
+                if st.form_submit_button("💾 Salvar Investimento", type="primary", use_container_width=True):
                     if inv_tipo.strip():
                         ganho = inv_sal - inv_ap
                         rent = (ganho / inv_ap * 100) if inv_ap > 0 else 0.0
@@ -796,12 +819,12 @@ elif menu == "📈 Investimentos":
                         st.rerun()
 
         if df_i_all.empty:
-            st.info("A sua carteira ainda está vazia. Clique em **➕ Cadastrar Novo Investimento** acima para começar!")
+            st.info("Sua carteira está vazia. Clique acima para cadastrar!")
         else:
             with st.form("form_edit_inv"):
-                ch1, ch2 = st.columns([3, 1])
-                ch1.markdown("##### 📋 Carteira Completa de Investimentos")
-                btn_s_inv = ch2.form_submit_button("💾 Salvar Carteira", type="primary", use_container_width=True)
+                ch1, ch2 = st.columns([1.5, 1])
+                ch1.markdown("##### 📋 Carteira")
+                btn_s_inv = ch2.form_submit_button("💾 Salvar", type="primary", use_container_width=True)
 
                 df_ip = df_i_all[["id", "data_dt", "mes", "pessoa", "tipo_investimento", "instituicao", "valor_aplicado", "saldo_atual", "ganho_mes", "rentabilidade", "observacoes"]].copy()
                 df_ip["data_dt"] = df_ip["data_dt"].dt.date
@@ -814,14 +837,14 @@ elif menu == "📈 Investimentos":
                         "data_dt": st.column_config.DateColumn("Data", format="DD/MM/YYYY"),
                         "mes": st.column_config.TextColumn("Mês"),
                         "pessoa": st.column_config.SelectboxColumn("Pessoa", options=["Casal", "Henrique", "Camila"]),
-                        "tipo_investimento": st.column_config.TextColumn("Tipo de Investimento"),
-                        "instituicao": st.column_config.TextColumn("Instituição"),
-                        "valor_aplicado": st.column_config.NumberColumn("Valor Aplicado", format="R$ %.2f"),
-                        "saldo_atual": st.column_config.NumberColumn("Saldo Atual", format="R$ %.2f"),
-                        "ganho_mes": st.column_config.NumberColumn("Ganho no Mês", format="R$ %.2f"),
-                        "rentabilidade": st.column_config.NumberColumn("Rentabilidade %", format="%.2f%%"),
-                        "observacoes": st.column_config.TextColumn("Observações"),
-                        "Excluir?": st.column_config.CheckboxColumn("🗑️ Excluir")
+                        "tipo_investimento": st.column_config.TextColumn("Tipo"),
+                        "instituicao": st.column_config.TextColumn("Inst."),
+                        "valor_aplicado": st.column_config.NumberColumn("Aplicado", format="R$ %.2f"),
+                        "saldo_atual": st.column_config.NumberColumn("Atual", format="R$ %.2f"),
+                        "ganho_mes": st.column_config.NumberColumn("Ganho", format="R$ %.2f"),
+                        "rentabilidade": st.column_config.NumberColumn("Rent. %", format="%.2f%%"),
+                        "observacoes": st.column_config.TextColumn("Obs"),
+                        "Excluir?": st.column_config.CheckboxColumn("🗑️")
                     }
                 )
                 if btn_s_inv:
@@ -845,39 +868,37 @@ elif menu == "📈 Investimentos":
 # 6. CATEGORIAS & OPÇÕES
 # ==========================================
 elif menu == "🏷️ Categorias & Opções":
-    st.title("🏷️ Personalizar Categorias & Pagamentos")
+    st.title("🏷️ Configurações")
 
-    col1, col2, col3 = st.columns(3)
-    for col, titulo, tipo_p in [(col1, "Categorias (com Emoji)", "categoria"), (col2, "Status", "status"), (col3, "Formas de Pagamento", "forma_pagamento")]:
-        with col:
-            st.markdown(f"#### {titulo}")
-            with st.form(f"add_p_{tipo_p}", clear_on_submit=True):
-                nv = st.text_input("Adicionar item:", placeholder="Ex: Delivery")
-                if st.form_submit_button("➕ Adicionar", use_container_width=True) and nv.strip():
-                    val_f = aplicar_emoji(nv.strip()) if tipo_p == "categoria" else nv.strip()
-                    conn = get_conn()
-                    conn.execute("INSERT INTO parametros (tipo, valor) VALUES (?, ?)", (tipo_p, val_f))
-                    conn.commit()
-                    conn.close()
-                    limpar_cache()
-                    st.rerun()
+    for titulo, tipo_p in [("Categorias (com Emoji)", "categoria"), ("Status", "status"), ("Formas de Pagamento", "forma_pagamento")]:
+        st.markdown(f"#### {titulo}")
+        with st.form(f"add_p_{tipo_p}", clear_on_submit=True):
+            nv = st.text_input("Novo item:", placeholder="Ex: Delivery")
+            if st.form_submit_button("➕ Adicionar", use_container_width=True) and nv.strip():
+                val_f = aplicar_emoji(nv.strip()) if tipo_p == "categoria" else nv.strip()
+                conn = get_conn()
+                conn.execute("INSERT INTO parametros (tipo, valor) VALUES (?, ?)", (tipo_p, val_f))
+                conn.commit()
+                conn.close()
+                limpar_cache()
+                st.rerun()
 
-            df_sub = df_param[df_param["tipo"] == tipo_p][["id", "valor"]].copy()
-            df_sub["Excluir?"] = False
-            with st.form(f"edit_p_{tipo_p}"):
-                df_pe = st.data_editor(
-                    df_sub, hide_index=True, use_container_width=True,
-                    column_config={"id": None, "valor": st.column_config.TextColumn("Nome"), "Excluir?": st.column_config.CheckboxColumn("🗑️")}
-                )
-                if st.form_submit_button("💾 Salvar Lista", use_container_width=True):
-                    conn = get_conn()
-                    for _, r in df_pe.iterrows():
-                        if r["Excluir?"]:
-                            conn.execute("DELETE FROM parametros WHERE id=?", (int(r["id"]),))
-                        else:
-                            vf = aplicar_emoji(r["valor"]) if tipo_p == "categoria" else str(r["valor"]).strip()
-                            conn.execute("UPDATE parametros SET valor=? WHERE id=?", (vf, int(r["id"])))
-                    conn.commit()
-                    conn.close()
-                    limpar_cache()
-                    st.rerun()
+        df_sub = df_param[df_param["tipo"] == tipo_p][["id", "valor"]].copy()
+        df_sub["Excluir?"] = False
+        with st.form(f"edit_p_{tipo_p}"):
+            df_pe = st.data_editor(
+                df_sub, hide_index=True, use_container_width=True,
+                column_config={"id": None, "valor": st.column_config.TextColumn("Nome"), "Excluir?": st.column_config.CheckboxColumn("🗑️")}
+            )
+            if st.form_submit_button("💾 Salvar Lista", use_container_width=True):
+                conn = get_conn()
+                for _, r in df_pe.iterrows():
+                    if r["Excluir?"]:
+                        conn.execute("DELETE FROM parametros WHERE id=?", (int(r["id"]),))
+                    else:
+                        vf = aplicar_emoji(r["valor"]) if tipo_p == "categoria" else str(r["valor"]).strip()
+                        conn.execute("UPDATE parametros SET valor=? WHERE id=?", (vf, int(r["id"])))
+                conn.commit()
+                conn.close()
+                limpar_cache()
+                st.rerun()
