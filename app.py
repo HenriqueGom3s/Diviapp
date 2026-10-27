@@ -8,187 +8,151 @@ from datetime import date
 import io
 
 # ==========================================
-# CONFIGURAÇÃO DA PÁGINA E CSS PRO UI
+# CONFIGURAÇÃO DA PÁGINA E CSS UI/UX PROFISSIONAL
 # ==========================================
 st.set_page_config(page_title="Diviapp Pro", page_icon="💎", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown("""
-    /* 1. Importação das Fontes (Outfit para Títulos/Valores + Inter para Corpo/Tabelas) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap');
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap');
 
-/* 2. Variáveis CSS Globais (Design Tokens) */
-:root {
-    /* Cores de Fundo e Superfície */
-    --bg-main: #F8FAFC;
-    --bg-surface: #FFFFFF;
-    --bg-sidebar: #0F172A;
-    --bg-sidebar-hover: rgba(79, 70, 229, 0.16);
+    :root {
+        --bg-main: #F8FAFC;
+        --bg-surface: #FFFFFF;
+        --bg-sidebar: #0F172A;
+        --bg-sidebar-hover: rgba(79, 70, 229, 0.16);
+        --color-primary: #0F172A;
+        --color-accent: #10B981;
+        --color-accent-hover: #059669;
+        --color-secondary: #4F46E5;
+        --text-primary: #1E293B;
+        --text-secondary: #64748B;
+        --text-on-dark: #F8FAFC;
+        --status-ok-bg: #ECFDF5;
+        --status-ok-text: #047857;
+        --status-warn-bg: #FFFBEB;
+        --status-warn-text: #B45309;
+        --status-danger-bg: #FEF2F2;
+        --status-danger-text: #B91C1C;
+        --border-subtle: #E2E8F0;
+        --radius-md: 12px;
+        --radius-lg: 18px;
+        --shadow-soft: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 4px 10px -2px rgba(15, 23, 42, 0.02);
+        --shadow-hover: 0 18px 32px -8px rgba(15, 23, 42, 0.08);
+        --transition-fast: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-main);
+        color: var(--text-primary);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .main {
+        background-color: var(--bg-main) !important;
+        padding-top: 1.5rem;
+    }
+
+    h1, h2, h3, .card-value {
+        font-family: 'Outfit', sans-serif !important;
+        color: var(--color-primary) !important;
+        letter-spacing: -0.025em;
+    }
     
-    /* Cores da Marca e Destaque */
-    --color-primary: #0F172A;
-    --color-accent: #10B981;        /* Verde Esmeralda para botões principais */
-    --color-accent-hover: #059669;
-    --color-secondary: #4F46E5;     /* Índigo para detalhes e filtros */
+    /* Cards Executivos */
+    .pro-card {
+        background: var(--bg-surface);
+        border-radius: var(--radius-lg);
+        padding: 24px 26px;
+        border: 1px solid var(--border-subtle);
+        box-shadow: var(--shadow-soft);
+        transition: var(--transition-fast);
+        margin-bottom: 16px;
+    }
+    .pro-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-hover);
+        border-color: #CBD5E1;
+    }
+    .pro-card-dark {
+        background: linear-gradient(135deg, var(--color-primary) 0%, #1E293B 60%, #312E81 100%);
+        color: var(--text-on-dark);
+        border-radius: var(--radius-lg);
+        padding: 24px 26px;
+        box-shadow: 0 14px 28px -6px rgba(15, 23, 42, 0.25);
+        margin-bottom: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .pro-card-dark .card-value {
+        color: #FFFFFF !important;
+    }
+    .card-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+    }
+    .pro-card-dark .card-label {
+        color: #94A3B8;
+    }
+    .card-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin: 0;
+        line-height: 1.15;
+        font-variant-numeric: tabular-nums;
+    }
+    .card-sub {
+        font-size: 0.84rem;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(226, 232, 240, 0.6);
+        color: var(--text-secondary);
+    }
+    .pro-card-dark .card-sub {
+        border-top-color: rgba(255, 255, 255, 0.12);
+        color: #CBD5E1;
+    }
     
-    /* Cores de Texto */
-    --text-primary: #1E293B;
-    --text-secondary: #64748B;
-    --text-on-dark: #F8FAFC;
+    /* Badges de Status */
+    .badge-ok { background: var(--status-ok-bg); color: var(--status-ok-text); padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 0.75rem; }
+    .badge-warn { background: var(--status-warn-bg); color: var(--status-warn-text); padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 0.75rem; }
+    .badge-danger { background: var(--status-danger-bg); color: var(--status-danger-text); padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 0.75rem; }
     
-    /* Cores Semânticas (Status) */
-    --status-ok-bg: #ECFDF5;
-    --status-ok-text: #047857;
-    --status-warn-bg: #FFFBEB;
-    --status-warn-text: #B45309;
-    --status-danger-bg: #FEF2F2;
-    --status-danger-text: #B91C1C;
-
-    /* Bordas, Raios e Sombras */
-    --border-subtle: #E2E8F0;
-    --radius-md: 12px;
-    --radius-lg: 18px;
-    --shadow-soft: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 4px 10px -2px rgba(15, 23, 42, 0.02);
-    --shadow-hover: 0 18px 32px -8px rgba(15, 23, 42, 0.08);
-    --transition-fast: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 3. Reset e Tipografia Base */
-html, body, [class*="css"] {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: var(--bg-main);
-    color: var(--text-primary);
-    -webkit-font-smoothing: antialiased;
-}
-
-.main {
-    background-color: var(--bg-main) !important;
-    padding-top: 1.5rem;
-}
-
-/* Títulos com a fonte Outfit */
-h1, h2, h3, .card-value {
-    font-family: 'Outfit', sans-serif !important;
-    color: var(--color-primary) !important;
-    letter-spacing: -0.025em;
-}
-
-/* 4. Cards Executivos com "Respiro" e Números Tabulares */
-.pro-card {
-    background: var(--bg-surface);
-    border-radius: var(--radius-lg);
-    padding: 24px 26px;
-    border: 1px solid var(--border-subtle);
-    box-shadow: var(--shadow-soft);
-    transition: var(--transition-fast);
-    margin-bottom: 16px;
-}
-
-.pro-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-hover);
-    border-color: #CBD5E1;
-}
-
-.pro-card-dark {
-    background: linear-gradient(135deg, var(--color-primary) 0%, #1E293B 60%, #312E81 100%);
-    color: var(--text-on-dark);
-    border-radius: var(--radius-lg);
-    padding: 24px 26px;
-    box-shadow: 0 14px 28px -6px rgba(15, 23, 42, 0.25);
-    margin-bottom: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.pro-card-dark .card-value {
-    color: #FFFFFF !important;
-}
-
-.card-label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-}
-
-.pro-card-dark .card-label {
-    color: #94A3B8;
-}
-
-.card-value {
-    font-size: 1.8rem;
-    font-weight: 800;
-    margin: 0;
-    line-height: 1.15;
-    font-variant-numeric: tabular-nums; /* Alinha todos os dígitos perfeitamente */
-}
-
-.card-sub {
-    font-size: 0.84rem;
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(226, 232, 240, 0.6);
-    color: var(--text-secondary);
-}
-
-.pro-card-dark .card-sub {
-    border-top-color: rgba(255, 255, 255, 0.12);
-    color: #CBD5E1;
-}
-
-/* 5. Botões Principais e de Ação (+ / Salvar) */
-button[kind="primary"], .btn-primary {
-    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%) !important;
-    color: #FFFFFF !important;
-    border: none !important;
-    border-radius: var(--radius-md) !important;
-    font-weight: 600 !important;
-    padding: 0.55rem 1.2rem !important;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25) !important;
-    transition: var(--transition-fast) !important;
-}
-
-button[kind="primary"]:hover, .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35) !important;
-    filter: brightness(1.03);
-}
-
-/* 6. Badges Semânticas de Status */
-.badge-ok, .badge-warn, .badge-danger {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 12px;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 0.75rem;
-    letter-spacing: 0.01em;
-}
-.badge-ok { background: var(--status-ok-bg); color: var(--status-ok-text); }
-.badge-warn { background: var(--status-warn-bg); color: var(--status-warn-text); }
-.badge-danger { background: var(--status-danger-bg); color: var(--status-danger-text); }
-
-/* 7. Menu Lateral (Sidebar) Sofisticado */
-div[data-testid="stSidebar"] {
-    background-color: var(--bg-sidebar) !important;
-    border-right: 1px solid #1E293B;
-}
-
-div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: var(--radius-md);
-    padding: 14px 18px !important;
-    margin-bottom: 10px !important;
-    transition: var(--transition-fast);
-}
-
-div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label:hover {
-    background: var(--bg-sidebar-hover);
-    border-color: var(--color-secondary);
-    transform: translateX(4px);
-}
+    /* Sidebar Redesenhada */
+    div[data-testid="stSidebar"] {
+        background-color: var(--bg-sidebar) !important;
+        border-right: 1px solid #1E293B;
+    }
+    div[data-testid="stSidebar"] * {
+        color: #F8FAFC !important;
+    }
+    div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: var(--radius-md);
+        padding: 14px 18px !important;
+        margin-bottom: 10px !important;
+        transition: var(--transition-fast);
+        cursor: pointer;
+    }
+    div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label:hover {
+        background: var(--bg-sidebar-hover);
+        border-color: var(--color-secondary);
+        transform: translateX(4px);
+    }
+    div[data-testid="stSidebar"] .stRadio > div[role="radiogroup"] > label p {
+        font-size: 1.12rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.2px;
+    }
+    div[data-testid="stSidebar"] hr {
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    </style>
 """, unsafe_allow_html=True)
 
 DB_FILE = "diviapp_pro.db"
@@ -205,7 +169,6 @@ MESES_ABREV = {
 }
 
 def formatar_mes_abrev(mes_ano_str):
-    """Converte '2026-10' para '/OUT 2026'"""
     if not mes_ano_str or not isinstance(mes_ano_str, str) or "-" not in mes_ano_str:
         return str(mes_ano_str)
     try:
@@ -215,7 +178,6 @@ def formatar_mes_abrev(mes_ano_str):
         return mes_ano_str
 
 def formatar_data_abrev(dt):
-    """Converte uma data para '15/OUT'"""
     if pd.isna(dt):
         return "-"
     try:
@@ -224,14 +186,13 @@ def formatar_data_abrev(dt):
         return str(dt)
 
 def calcular_mes_adjacente(ano, mes, delta):
-    """Retorna 'YYYY-MM' somando ou subtraindo meses"""
     total_meses = (ano * 12 + (mes - 1)) + delta
     novo_ano = total_meses // 12
     novo_mes = (total_meses % 12) + 1
     return f"{novo_ano:04d}-{novo_mes:02d}"
 
 # ==========================================
-# MAPA DE EMOJIS INTELIGENTE (CORRIGIDO BUG DO ⚡)
+# MAPA DE EMOJIS INTELIGENTE (CORRIGIDO ⚡)
 # ==========================================
 EMOJI_MAP = {
     "moradia": "🏠", "aluguel": "🏠", "casa": "🏠",
@@ -255,7 +216,6 @@ def aplicar_emoji(nome_cat):
     if not nome_cat:
         return "📦 Outros"
     texto = str(nome_cat).strip()
-    # Remove todos os emojis/símbolos repetidos no início antes de aplicar apenas um (Corrige bug do ⚡ Energia)
     texto_limpo = re.sub(r'^[^\w\sÀ-ÿ]+\s*', '', texto).strip()
     if not texto_limpo:
         texto_limpo = "Outros"
@@ -269,13 +229,12 @@ def formatar_moeda(valor):
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 # ==========================================
-# BANCO DE DADOS E SANITIZAÇÃO DE CATEGORIAS
+# BANCO DE DADOS E SANITIZAÇÃO
 # ==========================================
 def get_conn():
     return sqlite3.connect(DB_FILE, check_same_thread=False)
 
 def sanitizar_emojis_banco():
-    """Limpa categorias no banco que possam ter ficado com '⚡ ⚡ ⚡ Energia'"""
     conn = get_conn()
     c = conn.cursor()
     try:
@@ -420,7 +379,7 @@ hoje = date.today()
 mes_atual_str = hoje.strftime("%Y-%m")
 
 # ==========================================
-# SIDEBAR COM NOVA LOGO MODERNA E LAYOUT PREMIUM
+# SIDEBAR COM LOGO MODERNA
 # ==========================================
 with st.sidebar:
     st.markdown("""
@@ -454,27 +413,27 @@ with st.sidebar:
 
     st.markdown("<br>", unsafe_allow_html=True)
     with st.expander("💾 Backup & Exportar Excel"):
-        if st.button("Preparar Arquivo Excel", use_container_width=True):
+        if st.button("Preparar Ficheiro Excel", use_container_width=True):
             output = io.BytesIO()
             with pd.ExcelWriter(output, engine="openpyxl") as writer:
                 df_contas[df_contas["aba_dono"] == "Henrique"].to_excel(writer, sheet_name="Contas do Mês Henrique", index=False)
                 df_contas[df_contas["aba_dono"] == "Camila"].to_excel(writer, sheet_name="Contas do Mês Camila", index=False)
                 df_inv.to_excel(writer, sheet_name="Investimentos", index=False)
             st.download_button(
-                "📥 Baixar Planilha (.xlsx)",
+                "📥 Descarregar Planilha (.xlsx)",
                 data=output.getvalue(),
                 file_name=f"Diviapp_{date.today().strftime('%Y_%m_%d')}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 use_container_width=True
             )
-        if st.button("🔄 Resetar p/ Planilha Original", use_container_width=True):
+        if st.button("🔄 Repor Planilha Original", use_container_width=True):
             if os.path.exists(DB_FILE):
                 os.remove(DB_FILE)
             limpar_cache()
             st.rerun()
 
 # ==========================================
-# 1. VISÃO GERAL (PADRÃO: FILTRO DO MÊS ATUAL)
+# 1. VISÃO GERAL (MÊS ATUAL POR PADRÃO)
 # ==========================================
 if menu == "🚀 Visão Geral":
     st.title("🚀 Visão Geral Financeira")
@@ -482,7 +441,6 @@ if menu == "🚀 Visão Geral":
     meses_disp = sorted(list(set(df_contas["mes_ano"].dropna().unique().tolist() + [mes_atual_str])))
     opcoes_mapa = {m: formatar_mes_abrev(m) for m in meses_disp}
 
-    # Barra de filtro rápida já carregada com o mês atual por padrão
     f_col1, f_col2 = st.columns([2.2, 1])
     with f_col1:
         meses_sel = st.multiselect(
@@ -573,7 +531,7 @@ if menu == "🚀 Visão Geral":
         st.info("Nenhum lançamento encontrado para o mês selecionado.")
 
 # ==========================================
-# 2. RESUMO MENSAL (MÊS PASSADO, ATUAL E PRÓXIMO)
+# 2. RESUMO MENSAL (PASSADO, ATUAL, PRÓXIMO)
 # ==========================================
 elif menu == "📅 Resumo Mensal":
     st.title("📅 Resumo Mensal Inteligente")
@@ -620,7 +578,7 @@ elif menu == "📅 Resumo Mensal":
         st.dataframe(piv_cat, column_config=col_cfg, use_container_width=True, hide_index=True)
 
 # ==========================================
-# 3 e 4. CENTRAL DE CONTAS HENRIQUE E CAMILA
+# 3 e 4. CENTRAL DE CONTAS (HENRIQUE & CAMILA)
 # ==========================================
 elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
     dono_atual = "Henrique" if "Henrique" in menu else "Camila"
@@ -634,17 +592,14 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
         df_dono_total = df_c_all[df_c_all["aba_dono"] == dono].sort_values(by="vencimento_dt", ascending=False).copy()
         ganho_dono = float(dict(zip(df_g_all["aba_dono"], df_g_all["ganho_mensal"])).get(dono, 0.0))
 
-        # Controle de paginação de 20 em 20 no session_state
         chave_limite = f"limite_linhas_{dono}"
         if chave_limite not in st.session_state:
             st.session_state[chave_limite] = 20
 
-        # Lista de meses com abreviação /JAN, /FEV... e mês atual selecionado por padrão
         meses_dono = sorted(list(set(df_dono_total["mes_ano"].dropna().unique().tolist() + [mes_atual_str])))
         opcoes_mes_dono = ["TODOS"] + meses_dono
         idx_padrao = opcoes_mes_dono.index(mes_atual_str) if mes_atual_str in opcoes_mes_dono else 0
 
-        # Barra Superior de Filtros + Botão "+" sem descrição
         col_f_mes, col_f_busca, col_btn_mais = st.columns([1.3, 2.4, 0.35])
         with col_f_mes:
             mes_escolhido = st.selectbox(
@@ -663,7 +618,6 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
                 key=f"busca_{dono}"
             )
         with col_btn_mais:
-            # Botão de "+" sem descrição para adicionar conta na planilha
             with st.popover("➕", use_container_width=True):
                 with st.form(f"form_rapido_{dono}", clear_on_submit=True):
                     st.markdown(f"**Nova Conta ({dono})**")
@@ -690,7 +644,6 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
                             limpar_cache()
                             st.rerun()
 
-        # Aplica o filtro de mês selecionado
         df_dono = df_dono_total.copy()
         if mes_escolhido != "TODOS":
             df_dono = df_dono[df_dono["mes_ano"] == mes_escolhido]
@@ -703,7 +656,6 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
                 df_dono["status"].str.lower().str.contains(termo, na=False)
             ]
 
-        # KPIs e Edição de Renda Mensal
         tot_geral = df_dono["valor"].sum()
         tot_pago = df_dono[df_dono["status"].str.lower() == "pago"]["valor"].sum()
         tot_pend = df_dono[df_dono["status"].str.lower().isin(["pendente", "atrasado"])]["valor"].sum()
@@ -728,7 +680,6 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
                     limpar_cache()
                     st.rerun()
 
-        # Paginação: exibe os primeiros N resultados (20 por padrão) sem prender em container com scroll
         total_registros = len(df_dono)
         limite_atual = st.session_state[chave_limite]
         df_paginado = df_dono.head(limite_atual).copy()
@@ -742,7 +693,6 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
         df_prep["vencimento_dt"] = df_prep["vencimento_dt"].dt.date
         df_prep["Excluir?"] = False
 
-        # Calcula altura exata para que a tabela nunca fique presa em container com barra de rolagem vertical
         altura_livre = max(140, (len(df_prep) + 1) * 36 + 12)
 
         df_editado = st.data_editor(
@@ -788,7 +738,6 @@ elif menu in ["🧔🏻 Contas Henrique", "👩🏻 Contas Camila"]:
             st.toast("Alterações salvas com sucesso!", icon="✅")
             st.rerun()
 
-        # Botão para mostrar os próximos 20 resultados se houver mais contas
         if total_registros > limite_atual:
             restantes = total_registros - limite_atual
             prox_lote = min(20, restantes)
@@ -847,7 +796,7 @@ elif menu == "📈 Investimentos":
                         st.rerun()
 
         if df_i_all.empty:
-            st.info("Sua carteira ainda está vazia. Clique em **➕ Cadastrar Novo Investimento** acima para começar!")
+            st.info("A sua carteira ainda está vazia. Clique em **➕ Cadastrar Novo Investimento** acima para começar!")
         else:
             with st.form("form_edit_inv"):
                 ch1, ch2 = st.columns([3, 1])
