@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diviapp - Financeiro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <!-- Navegação Mobile (Bottom Bar) -->
+    <nav class="bg-white shadow-md fixed bottom-0 w-full z-50 flex justify-around p-3 sm:top-0 sm:bottom-auto sm:justify-center sm:gap-10">
+        <button onclick="switchTab('dashboard')" class="text-blue-600 font-bold flex flex-col items-center">
+            <span>🏠</span><span class="text-xs">Dashboard</span>
+        </button>
+        <button onclick="switchTab('henrique')" class="text-gray-500 hover:text-blue-600 font-bold flex flex-col items-center">
+            <span>👨</span><span class="text-xs">Henrique</span>
+        </button>
+        <button onclick="switchTab('camila')" class="text-gray-500 hover:text-blue-600 font-bold flex flex-col items-center">
+            <span>👩</span><span class="text-xs">Camila</span>
+        </button>
+    </nav>
+
+    <div class="container mx-auto p-4 sm:pt-20 pb-20 max-w-4xl">
+        <h1 class="text-3xl font-bold text-center mb-6 text-blue-700">Diviapp 💍</h1>
+
+        <!-- Mês Global -->
+        <div class="mb-6 flex justify-end">
+            <input type="month" id="mesGlobal" class="border p-2 rounded shadow-sm" onchange="carregarDados()">
+        </div>
+
+        <!-- ================= DASHBOARD ================= -->
+        <div id="dashboard" class="tab-content active">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-4 rounded shadow">
+                    <p class="text-sm text-gray-500">Entrada Total</p>
+                    <p id="dash-entrada" class="text-xl font-bold text-green-600">R$ 0,00</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow">
+                    <p class="text-sm text-gray-500">Saída Total</p>
+                    <p id="dash-saida" class="text-xl font-bold text-red-600">R$ 0,00</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow">
+                    <p class="text-sm text-gray-500">Sobra do Casal</p>
+                    <p id="dash-sobra" class="text-xl font-bold text-blue-600">R$ 0,00</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow">
+                    <p class="text-sm text-gray-500">Total Investido</p>
+                    <p id="dash-investido" class="text-xl font-bold text-purple-600">R$ 0,00</p>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded shadow">
+                <h3 class="text-lg font-bold mb-4">Gastos por Categoria</h3>
+                <canvas id="graficoCategorias"></canvas>
+            </div>
+        </div>
+
+        <!-- ================= TELAS INDIVIDUAIS (GERADAS VIA JS) ================= -->
+        <div id="henrique" class="tab-content">
+            <h2 class="text-2xl font-bold mb-4">👨 Contas Henrique</h2>
+            <div id="metricas-henrique" class="grid grid-cols-3 gap-4 mb-6"></div>
+            <button onclick="toggleForm('form-henrique')" class="bg-blue-600 text-white px-4 py-2 rounded shadow mb-4 w-full text-left">➕ Adicionar Nova Conta</button>
+            <form id="form-henrique" class="hidden bg-white p-4 rounded shadow mb-6 space-y-3" onsubmit="adicionarConta(event, 'Henrique')">
+                <!-- Campos injetados via JS -->
+            </form>
+            <div class="overflow-x-auto bg-white rounded shadow">
+                <table class="min-w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-3">Descrição</th><th class="p-3">Valor</th><th class="p-3">Vencimento</th><th class="p-3">Status</th><th class="p-3">Ação</th></tr></thead><tbody id="tabela-henrique"></tbody></table>
+            </div>
+        </div>
+
+        <div id="camila" class="tab-content">
+            <h2 class="text-2xl font-bold mb-4">👩 Contas Camila</h2>
+            <div id="metricas-camila" class="grid grid-cols-3 gap-4 mb-6"></div>
+            <button onclick="toggleForm('form-camila')" class="bg-blue-600 text-white px-4 py-2 rounded shadow mb-4 w-full text-left">➕ Adicionar Nova Conta</button>
+            <form id="form-camila" class="hidden bg-white p-4 rounded shadow mb-6 space-y-3" onsubmit="adicionarConta(event, 'Camila')">
+                <!-- Campos injetados via JS -->
+            </form>
+            <div class="overflow-x-auto bg-white rounded shadow">
+                <table class="min-w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-3">Descrição</th><th class="p-3">Valor</th><th class="p-3">Vencimento</th><th class="p-3">Status</th><th class="p-3">Ação</th></tr></thead><tbody id="tabela-camila"></tbody></table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LÓGICA DO APLICATIVO -->
+    <script>
+        // CONFIGURAÇÃO SUPABASE - COLOQUE SUAS CHAVES AQUI
+        const SUPABASE_URL = 'SUA_URL_DO_SUPABASE';
+        const SUPABASE_KEY = 'SUA_ANON_KEY_DO_SUPABASE';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // VARIÁVEIS GLOBAIS
+        let contas = [], ganhos = [];
+        let grafico;
+        const categorias = ['Moradia', 'Mercado', 'Energia', 'Água', 'Casamento', 'Telefone', 'Transporte', 'Saúde', 'Lazer', 'Compras pessoais', 'Cartão de crédito', 'Outros'];
+        const statusList = ['Pendente', 'Pago', 'Atrasado'];
+        const formasPagamento = ['Pix', 'Débito', 'Crédito', 'Boleto', 'Dinheiro'];
+
+        // INICIALIZAÇÃO
+        document.addEventListener("DOMContentLoaded", () => {
+            const hoje = new Date();
+            document.getElementById('mesGlobal').value = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+            gerarCamposFormulario('form-henrique', 'Henrique');
+            gerarCamposFormulario('form-camila', 'Camila');
+            carregarDados();
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            carregarDados();
+        }
+
+        function toggleForm(formId) {
+            const form = document.getElementById(formId);
+            form.classList.toggle('hidden');
+        }
+
+        const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+
+        // CARREGAR DADOS DO SUPABASE
+        async function carregarDados() {
+            const mesSelecionado = document.getElementById('mesGlobal').value;
+            
+            // Busca Contas
+            const resContas = await supabase.from('contas').select('*');
+            contas = resContas.data || [];
+            
+            // Filtra contas pelo mês
+            const contasMes = contas.filter(c => c.vencimento.startsWith(mesSelecionado));
+
+            atualizarDashboard(contasMes);
+            atualizarTelaPessoa('Henrique', contasMes);
+            atualizarTelaPessoa('Camila', contasMes);
+        }
+
+        // REGRAS DE NEGÓCIO: ADICIONAR CONTA (DIVISÃO CASAL)
+        async function adicionarConta(e, pessoaOrigem) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const valOriginal = parseFloat(formData.get('valor'));
+            const responsavel = formData.get('responsavel');
+            
+            const baseData = {
+                descricao: formData.get('descricao'),
+                categoria: formData.get('categoria'),
+                vencimento: formData.get('vencimento'),
+                status: formData.get('status'),
+                forma_pagamento: formData.get('forma_pagamento')
+            };
+
+            if (responsavel === 'Casal') {
+                const metade = valOriginal / 2;
+                await supabase.from('contas').insert([
+                    { ...baseData, valor: metade, responsavel: 'Henrique' },
+                    { ...baseData, valor: metade, responsavel: 'Camila' }
+                ]);
+            } else {
+                await supabase.from('contas').insert([
+                    { ...baseData, valor: valOriginal, responsavel: responsavel }
+                ]);
+            }
+
+            form.reset();
+            form.classList.add('hidden');
+            alert("Conta registrada com sucesso!");
+            carregarDados();
+        }
+
+        // DELETAR CONTA
+        async function deletarConta(id) {
+            if(confirm("Deseja mesmo apagar esta conta?")) {
+                await supabase.from('contas').delete().eq('id', id);
+                carregarDados();
+            }
+        }
+
+        // ATUALIZAR INTERFACE
+        function atualizarDashboard(contasMes) {
+            const totalSaida = contasMes.reduce((acc, curr) => acc + curr.valor, 0);
+            document.getElementById('dash-saida').innerText = formatarMoeda(totalSaida);
+
+            // Gráfico
+            const somaCat = {};
+            contasMes.forEach(c => somaCat[c.categoria] = (somaCat[c.categoria] || 0) + c.valor);
+            
+            if (grafico) grafico.destroy();
+            const ctx = document.getElementById('graficoCategorias').getContext('2d');
+            grafico = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(somaCat),
+                    datasets: [{ label: 'Gastos R$', data: Object.values(somaCat), backgroundColor: '#3b82f6' }]
+                }
+            });
+        }
+
+        function atualizarTelaPessoa(nome, contasMes) {
+            const contasPessoa = contasMes.filter(c => c.responsavel === nome);
+            const totalPagar = contasPessoa.reduce((acc, c) => acc + c.valor, 0);
+            const totalPendente = contasPessoa.filter(c => c.status !== 'Pago').reduce((acc, c) => acc + c.valor, 0);
+
+            const divId = nome.toLowerCase();
+            
+            // Atualiza métricas
+            document.getElementById(`metricas-${divId}`).innerHTML = `
+                <div class="bg-gray-50 p-2 rounded shadow text-center"><p class="text-xs text-gray-500">A Pagar</p><p class="font-bold text-red-600">${formatarMoeda(totalPagar)}</p></div>
+                <div class="bg-gray-50 p-2 rounded shadow text-center"><p class="text-xs text-gray-500">Pendente</p><p class="font-bold text-yellow-600">${formatarMoeda(totalPendente)}</p></div>
+            `;
+
+            // Atualiza Tabela
+            const tbody = document.getElementById(`tabela-${divId}`);
+            tbody.innerHTML = contasPessoa.map(c => `
+                <tr class="border-b"><td class="p-3">${c.descricao} <br><span class="text-xs text-gray-400">${c.categoria} - ${c.forma_pagamento}</span></td>
+                <td class="p-3 font-bold">R$ ${c.valor.toFixed(2)}</td><td class="p-3">${c.vencimento.split('-').reverse().join('/')}</td>
+                <td class="p-3"><span class="px-2 py-1 rounded text-xs ${c.status === 'Pago' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${c.status}</span></td>
+                <td class="p-3"><button onclick="deletarConta('${c.id}')" class="text-red-500">🗑️</button></td></tr>
+            `).join('');
+        }
+
+        function gerarCamposFormulario(formId, pessoaDefault) {
+            const form = document.getElementById(formId);
+            form.innerHTML = `
+                <input type="text" name="descricao" placeholder="Descrição" required class="w-full border p-2 rounded">
+                <div class="flex gap-2">
+                    <select name="categoria" class="w-1/2 border p-2 rounded">${categorias.map(c => `<option value="${c}">${c}</option>`).join('')}</select>
+                    <input type="number" name="valor" placeholder="Valor R$" step="0.01" required class="w-1/2 border p-2 rounded">
+                </div>
+                <div class="flex gap-2">
+                    <input type="date" name="vencimento" required class="w-1/2 border p-2 rounded">
+                    <select name="status" class="w-1/2 border p-2 rounded">${statusList.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
+                </div>
+                <div class="flex gap-2">
+                    <select name="forma_pagamento" class="w-1/2 border p-2 rounded">${formasPagamento.map(f => `<option value="${f}">${f}</option>`).join('')}</select>
+                    <select name="responsavel" class="w-1/2 border p-2 rounded">
+                        <option value="Henrique" ${pessoaDefault==='Henrique'?'selected':''}>Henrique</option>
+                        <option value="Camila" ${pessoaDefault==='Camila'?'selected':''}>Camila</option>
+                        <option value="Casal">Dividir (Casal)</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white font-bold py-2 rounded">Salvar Conta</button>
+            `;
+        }
+    </script>
+</body>
+</html>
