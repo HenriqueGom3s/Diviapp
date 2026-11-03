@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diviapp - Financeiro</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .tab-content { display: none; }
@@ -17,133 +14,216 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
 
-    <!-- Navegação Mobile (Bottom Bar) -->
+    <!-- Menu de Navegação -->
     <nav class="bg-white shadow-md fixed bottom-0 w-full z-50 flex justify-around p-3 sm:top-0 sm:bottom-auto sm:justify-center sm:gap-10">
-        <button onclick="switchTab('dashboard')" class="text-blue-600 font-bold flex flex-col items-center">
+        <button onclick="mudarAba('dashboard')" class="text-gray-500 hover:text-blue-600 font-bold flex flex-col items-center nav-btn" id="btn-dashboard">
             <span>🏠</span><span class="text-xs">Dashboard</span>
         </button>
-        <button onclick="switchTab('henrique')" class="text-gray-500 hover:text-blue-600 font-bold flex flex-col items-center">
+        <button onclick="mudarAba('henrique')" class="text-gray-500 hover:text-blue-600 font-bold flex flex-col items-center nav-btn" id="btn-henrique">
             <span>👨</span><span class="text-xs">Henrique</span>
         </button>
-        <button onclick="switchTab('camila')" class="text-gray-500 hover:text-blue-600 font-bold flex flex-col items-center">
+        <button onclick="mudarAba('camila')" class="text-gray-500 hover:text-blue-600 font-bold flex flex-col items-center nav-btn" id="btn-camila">
             <span>👩</span><span class="text-xs">Camila</span>
+        </button>
+        <button onclick="mudarAba('investimentos')" class="text-gray-500 hover:text-blue-600 font-bold flex flex-col items-center nav-btn" id="btn-investimentos">
+            <span>📈</span><span class="text-xs">Investimentos</span>
         </button>
     </nav>
 
-    <div class="container mx-auto p-4 sm:pt-20 pb-20 max-w-4xl">
+    <div class="container mx-auto p-4 sm:pt-24 pb-24 max-w-5xl">
         <h1 class="text-3xl font-bold text-center mb-6 text-blue-700">Diviapp 💍</h1>
 
-        <!-- Mês Global -->
-        <div class="mb-6 flex justify-end">
-            <input type="month" id="mesGlobal" class="border p-2 rounded shadow-sm" onchange="carregarDados()">
+        <!-- Seleção de Mês Global -->
+        <div class="mb-6 flex justify-end items-center gap-2">
+            <label class="font-bold text-gray-600">Mês de Referência:</label>
+            <input type="month" id="mesGlobal" class="border p-2 rounded shadow-sm bg-white" onchange="carregarDados()">
         </div>
 
         <!-- ================= DASHBOARD ================= -->
         <div id="dashboard" class="tab-content active">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-4 rounded shadow">
+                <div class="bg-white p-4 rounded shadow border-l-4 border-green-500">
                     <p class="text-sm text-gray-500">Entrada Total</p>
                     <p id="dash-entrada" class="text-xl font-bold text-green-600">R$ 0,00</p>
                 </div>
-                <div class="bg-white p-4 rounded shadow">
+                <div class="bg-white p-4 rounded shadow border-l-4 border-red-500">
                     <p class="text-sm text-gray-500">Saída Total</p>
                     <p id="dash-saida" class="text-xl font-bold text-red-600">R$ 0,00</p>
                 </div>
-                <div class="bg-white p-4 rounded shadow">
-                    <p class="text-sm text-gray-500">Sobra do Casal</p>
-                    <p id="dash-sobra" class="text-xl font-bold text-blue-600">R$ 0,00</p>
-                </div>
-                <div class="bg-white p-4 rounded shadow">
+                <div class="bg-white p-4 rounded shadow border-l-4 border-purple-500">
                     <p class="text-sm text-gray-500">Total Investido</p>
                     <p id="dash-investido" class="text-xl font-bold text-purple-600">R$ 0,00</p>
                 </div>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-blue-500">
+                    <p class="text-sm text-gray-500">Sobra do Casal</p>
+                    <p id="dash-sobra" class="text-xl font-bold text-blue-600">R$ 0,00</p>
+                </div>
             </div>
             <div class="bg-white p-4 rounded shadow">
-                <h3 class="text-lg font-bold mb-4">Gastos por Categoria</h3>
-                <canvas id="graficoCategorias"></canvas>
+                <h3 class="text-lg font-bold mb-4 text-gray-700">Gastos por Categoria</h3>
+                <div class="relative h-64 w-full">
+                    <canvas id="graficoCategorias"></canvas>
+                </div>
             </div>
         </div>
 
-        <!-- ================= TELAS INDIVIDUAIS (GERADAS VIA JS) ================= -->
+        <!-- ================= HENRIQUE ================= -->
         <div id="henrique" class="tab-content">
-            <h2 class="text-2xl font-bold mb-4">👨 Contas Henrique</h2>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">👨 Contas Henrique</h2>
+            
+            <div class="bg-white p-4 rounded shadow mb-6 flex gap-2 items-end">
+                <div class="w-full">
+                    <label class="text-sm text-gray-500 font-bold">Ganho Mensal Henrique (R$)</label>
+                    <input type="number" id="ganho-henrique" step="0.01" class="w-full border p-2 rounded bg-gray-50">
+                </div>
+                <button onclick="salvarGanho('Henrique')" class="bg-green-600 text-white px-6 py-2 rounded font-bold hover:bg-green-700 transition">Salvar</button>
+            </div>
+
             <div id="metricas-henrique" class="grid grid-cols-3 gap-4 mb-6"></div>
-            <button onclick="toggleForm('form-henrique')" class="bg-blue-600 text-white px-4 py-2 rounded shadow mb-4 w-full text-left">➕ Adicionar Nova Conta</button>
-            <form id="form-henrique" class="hidden bg-white p-4 rounded shadow mb-6 space-y-3" onsubmit="adicionarConta(event, 'Henrique')">
-                <!-- Campos injetados via JS -->
-            </form>
+            
+            <button onclick="toggleForm('form-henrique')" class="bg-blue-600 text-white px-4 py-2 rounded shadow mb-4 w-full text-left font-bold">➕ Adicionar Nova Conta</button>
+            <form id="form-henrique" class="hidden bg-white p-4 rounded shadow mb-6 space-y-3" onsubmit="adicionarConta(event, 'Henrique')"></form>
+            
             <div class="overflow-x-auto bg-white rounded shadow">
-                <table class="min-w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-3">Descrição</th><th class="p-3">Valor</th><th class="p-3">Vencimento</th><th class="p-3">Status</th><th class="p-3">Ação</th></tr></thead><tbody id="tabela-henrique"></tbody></table>
+                <table class="min-w-full text-sm text-left"><thead class="bg-gray-100 border-b"><tr><th class="p-3">Descrição</th><th class="p-3">Valor</th><th class="p-3">Vencimento</th><th class="p-3">Status</th><th class="p-3 text-center">Ação</th></tr></thead><tbody id="tabela-henrique"></tbody></table>
             </div>
         </div>
 
+        <!-- ================= CAMILA ================= -->
         <div id="camila" class="tab-content">
-            <h2 class="text-2xl font-bold mb-4">👩 Contas Camila</h2>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">👩 Contas Camila</h2>
+            
+            <div class="bg-white p-4 rounded shadow mb-6 flex gap-2 items-end">
+                <div class="w-full">
+                    <label class="text-sm text-gray-500 font-bold">Ganho Mensal Camila (R$)</label>
+                    <input type="number" id="ganho-camila" step="0.01" class="w-full border p-2 rounded bg-gray-50">
+                </div>
+                <button onclick="salvarGanho('Camila')" class="bg-green-600 text-white px-6 py-2 rounded font-bold hover:bg-green-700 transition">Salvar</button>
+            </div>
+
             <div id="metricas-camila" class="grid grid-cols-3 gap-4 mb-6"></div>
-            <button onclick="toggleForm('form-camila')" class="bg-blue-600 text-white px-4 py-2 rounded shadow mb-4 w-full text-left">➕ Adicionar Nova Conta</button>
-            <form id="form-camila" class="hidden bg-white p-4 rounded shadow mb-6 space-y-3" onsubmit="adicionarConta(event, 'Camila')">
-                <!-- Campos injetados via JS -->
-            </form>
+            
+            <button onclick="toggleForm('form-camila')" class="bg-blue-600 text-white px-4 py-2 rounded shadow mb-4 w-full text-left font-bold">➕ Adicionar Nova Conta</button>
+            <form id="form-camila" class="hidden bg-white p-4 rounded shadow mb-6 space-y-3" onsubmit="adicionarConta(event, 'Camila')"></form>
+            
             <div class="overflow-x-auto bg-white rounded shadow">
-                <table class="min-w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-3">Descrição</th><th class="p-3">Valor</th><th class="p-3">Vencimento</th><th class="p-3">Status</th><th class="p-3">Ação</th></tr></thead><tbody id="tabela-camila"></tbody></table>
+                <table class="min-w-full text-sm text-left"><thead class="bg-gray-100 border-b"><tr><th class="p-3">Descrição</th><th class="p-3">Valor</th><th class="p-3">Vencimento</th><th class="p-3">Status</th><th class="p-3 text-center">Ação</th></tr></thead><tbody id="tabela-camila"></tbody></table>
             </div>
         </div>
 
+        <!-- ================= INVESTIMENTOS ================= -->
+        <div id="investimentos" class="tab-content">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">📈 Hub de Investimentos</h2>
+            
+            <button onclick="toggleForm('form-invest')" class="bg-purple-600 text-white px-4 py-2 rounded shadow mb-4 w-full text-left font-bold">➕ Adicionar Investimento</button>
+            <form id="form-invest" class="hidden bg-white p-4 rounded shadow mb-6 space-y-3" onsubmit="adicionarInvestimento(event)">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input type="date" name="data" required class="border p-2 rounded w-full">
+                    <select name="responsavel" required class="border p-2 rounded w-full">
+                        <option value="Henrique">Henrique</option>
+                        <option value="Camila">Camila</option>
+                        <option value="Casal">Casal</option>
+                    </select>
+                    <input type="text" name="tipo_investimento" placeholder="Tipo (CDB, Tesouro)" required class="border p-2 rounded w-full">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input type="text" name="instituicao" placeholder="Instituição" required class="border p-2 rounded w-full">
+                    <input type="number" name="valor_aplicado" step="0.01" placeholder="Valor Aplicado R$" required class="border p-2 rounded w-full">
+                    <input type="number" name="ganho_mes" step="0.01" placeholder="Ganho no Mês R$" class="border p-2 rounded w-full">
+                </div>
+                <button type="submit" class="w-full bg-purple-600 text-white font-bold py-2 rounded">Registrar Investimento</button>
+            </form>
+
+            <div class="overflow-x-auto bg-white rounded shadow">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="bg-gray-100 border-b">
+                        <tr><th class="p-3">Data</th><th class="p-3">Resp.</th><th class="p-3">Ativo</th><th class="p-3">Valor Aplicado</th><th class="p-3">Ganho</th><th class="p-3">Saldo Atual</th><th class="p-3 text-center">Ação</th></tr>
+                    </thead>
+                    <tbody id="tabela-invest"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <!-- LÓGICA DO APLICATIVO -->
+    <!-- SCRIPT DE FUNCIONALIDADE E SUPABASE -->
     <script>
-        // CONFIGURAÇÃO SUPABASE - COLOQUE SUAS CHAVES AQUI
-        const SUPABASE_URL = 'https://mljyikyhadcxkpzojnzv.supabase.co/rest/v1/';
+        // CONFIGURAÇÃO SUPABASE
+        const SUPABASE_URL = 'https://mljyikyhadcxkpzojnzv.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_Hv9Hirm9bJB1fmvjzLKoRw_AdZPoqi4';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // VARIÁVEIS GLOBAIS
-        let contas = [], ganhos = [];
+        // VARIÁVEIS E LISTAS
+        let contas = [], ganhos = [], investimentos = [];
         let grafico;
-        const categorias = ['Moradia', 'Mercado', 'Energia', 'Água', 'Casamento', 'Telefone', 'Transporte', 'Saúde', 'Lazer', 'Compras pessoais', 'Cartão de crédito', 'Outros'];
+        const categorias = ['Moradia', 'Mercado', 'Energia', 'Água', 'Casamento', 'Telefone', 'Transporte', 'Saúde', 'Lazer', 'Compras pessoais', 'Cartão de crédito', 'Financiamento', 'Carro', 'Outros'];
         const statusList = ['Pendente', 'Pago', 'Atrasado'];
-        const formasPagamento = ['Pix', 'Débito', 'Crédito', 'Boleto', 'Dinheiro'];
+        const formasPagamento = ['Pix', 'Débito', 'Crédito', 'Boleto', 'Dinheiro', 'Transferência', 'Débito automático'];
 
         // INICIALIZAÇÃO
         document.addEventListener("DOMContentLoaded", () => {
             const hoje = new Date();
             document.getElementById('mesGlobal').value = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-            gerarCamposFormulario('form-henrique', 'Henrique');
-            gerarCamposFormulario('form-camila', 'Camila');
-            carregarDados();
+            gerarFormConta('form-henrique', 'Henrique');
+            gerarFormConta('form-camila', 'Camila');
+            mudarAba('dashboard');
         });
 
-        function switchTab(tabId) {
+        // NAVEGAÇÃO
+        function mudarAba(abaId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.replace('text-blue-600', 'text-gray-500'));
+            
+            document.getElementById(abaId).classList.add('active');
+            document.getElementById('btn-' + abaId).classList.replace('text-gray-500', 'text-blue-600');
+            
             carregarDados();
         }
 
         function toggleForm(formId) {
-            const form = document.getElementById(formId);
-            form.classList.toggle('hidden');
+            document.getElementById(formId).classList.toggle('hidden');
         }
 
-        const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+        const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0);
 
-        // CARREGAR DADOS DO SUPABASE
+        // LEITURA DO BANCO DE DADOS (SUPABASE)
         async function carregarDados() {
             const mesSelecionado = document.getElementById('mesGlobal').value;
             
-            // Busca Contas
-            const resContas = await supabase.from('contas').select('*');
-            contas = resContas.data || [];
-            
-            // Filtra contas pelo mês
-            const contasMes = contas.filter(c => c.vencimento.startsWith(mesSelecionado));
+            // Busca simultânea no banco para ser mais rápido
+            const [resContas, resGanhos, resInvest] = await Promise.all([
+                supabase.from('contas').select('*'),
+                supabase.from('ganhos').select('*').eq('mes', mesSelecionado),
+                supabase.from('investimentos').select('*')
+            ]);
 
-            atualizarDashboard(contasMes);
-            atualizarTelaPessoa('Henrique', contasMes);
-            atualizarTelaPessoa('Camila', contasMes);
+            contas = resContas.data || [];
+            ganhos = resGanhos.data || [];
+            investimentos = resInvest.data || [];
+
+            // Filtragem por mês para contas e investimentos
+            const contasMes = contas.filter(c => c.vencimento.startsWith(mesSelecionado));
+            const investMes = investimentos.filter(i => i.data.startsWith(mesSelecionado));
+
+            atualizarTelas(contasMes, investMes, ganhos);
         }
 
-        // REGRAS DE NEGÓCIO: ADICIONAR CONTA (DIVISÃO CASAL)
+        // SALVAR GANHOS (RENDA MENSAL)
+        async function salvarGanho(pessoa) {
+            const mes = document.getElementById('mesGlobal').value;
+            const valorInput = parseFloat(document.getElementById(`ganho-${pessoa.toLowerCase()}`).value) || 0;
+
+            const ganhoExistente = ganhos.find(g => g.responsavel === pessoa);
+
+            if (ganhoExistente) {
+                await supabase.from('ganhos').update({ valor: valorInput }).eq('id', ganhoExistente.id);
+            } else {
+                await supabase.from('ganhos').insert([{ mes: mes, responsavel: pessoa, valor: valorInput }]);
+            }
+            alert(`Ganho de ${pessoa} salvo com sucesso!`);
+            carregarDados();
+        }
+
+        // ADICIONAR CONTA E DIVIDIR PARA CASAL
         async function adicionarConta(e, pessoaOrigem) {
             e.preventDefault();
             const form = e.target;
@@ -151,7 +231,7 @@
             const valOriginal = parseFloat(formData.get('valor'));
             const responsavel = formData.get('responsavel');
             
-            const baseData = {
+            const novaConta = {
                 descricao: formData.get('descricao'),
                 categoria: formData.get('categoria'),
                 vencimento: formData.get('vencimento'),
@@ -160,35 +240,67 @@
             };
 
             if (responsavel === 'Casal') {
-                const metade = valOriginal / 2;
                 await supabase.from('contas').insert([
-                    { ...baseData, valor: metade, responsavel: 'Henrique' },
-                    { ...baseData, valor: metade, responsavel: 'Camila' }
+                    { ...novaConta, valor: valOriginal / 2, responsavel: 'Henrique' },
+                    { ...novaConta, valor: valOriginal / 2, responsavel: 'Camila' }
                 ]);
             } else {
                 await supabase.from('contas').insert([
-                    { ...baseData, valor: valOriginal, responsavel: responsavel }
+                    { ...novaConta, valor: valOriginal, responsavel: responsavel }
                 ]);
             }
 
             form.reset();
             form.classList.add('hidden');
-            alert("Conta registrada com sucesso!");
             carregarDados();
         }
 
-        // DELETAR CONTA
-        async function deletarConta(id) {
-            if(confirm("Deseja mesmo apagar esta conta?")) {
-                await supabase.from('contas').delete().eq('id', id);
+        // ADICIONAR INVESTIMENTO
+        async function adicionarInvestimento(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const val = parseFloat(formData.get('valor_aplicado')) || 0;
+            const ganho = parseFloat(formData.get('ganho_mes')) || 0;
+            
+            await supabase.from('investimentos').insert([{
+                data: formData.get('data'),
+                responsavel: formData.get('responsavel'),
+                tipo_investimento: formData.get('tipo_investimento'),
+                instituicao: formData.get('instituicao'),
+                valor_aplicado: val,
+                ganho_mes: ganho,
+                saldo_atual: val + ganho
+            }]);
+            
+            form.reset();
+            form.classList.add('hidden');
+            carregarDados();
+        }
+
+        // EXCLUIR REGISTROS
+        async function deletarRegistro(tabela, id) {
+            if(confirm("Tem certeza que deseja apagar este registro?")) {
+                await supabase.from(tabela).delete().eq('id', id);
                 carregarDados();
             }
         }
 
-        // ATUALIZAR INTERFACE
-        function atualizarDashboard(contasMes) {
-            const totalSaida = contasMes.reduce((acc, curr) => acc + curr.valor, 0);
+        // ATUALIZAÇÃO DA INTERFACE (HTML + CALCULOS)
+        function atualizarTelas(contasMes, investMes, ganhosMes) {
+            // 1. Cálculos Globais
+            const ganhoH = ganhosMes.find(g => g.responsavel === 'Henrique')?.valor || 0;
+            const ganhoC = ganhosMes.find(g => g.responsavel === 'Camila')?.valor || 0;
+            const totalEntrada = ganhoH + ganhoC;
+            const totalSaida = contasMes.reduce((acc, c) => acc + c.valor, 0);
+            const totalInvestido = investMes.reduce((acc, i) => acc + i.valor_aplicado, 0);
+            const sobraCasal = totalEntrada - totalSaida;
+
+            // 2. Atualiza Dashboard
+            document.getElementById('dash-entrada').innerText = formatarMoeda(totalEntrada);
             document.getElementById('dash-saida').innerText = formatarMoeda(totalSaida);
+            document.getElementById('dash-investido').innerText = formatarMoeda(totalInvestido);
+            document.getElementById('dash-sobra').innerText = formatarMoeda(sobraCasal);
 
             // Gráfico
             const somaCat = {};
@@ -200,55 +312,82 @@
                 type: 'bar',
                 data: {
                     labels: Object.keys(somaCat),
-                    datasets: [{ label: 'Gastos R$', data: Object.values(somaCat), backgroundColor: '#3b82f6' }]
-                }
+                    datasets: [{ label: 'Valor Gasto R$', data: Object.values(somaCat), backgroundColor: '#3b82f6', borderRadius: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
             });
-        }
 
-        function atualizarTelaPessoa(nome, contasMes) {
-            const contasPessoa = contasMes.filter(c => c.responsavel === nome);
-            const totalPagar = contasPessoa.reduce((acc, c) => acc + c.valor, 0);
-            const totalPendente = contasPessoa.filter(c => c.status !== 'Pago').reduce((acc, c) => acc + c.valor, 0);
+            // 3. Atualiza Telas Henrique e Camila
+            renderizarPessoa('Henrique', contasMes, ganhoH);
+            renderizarPessoa('Camila', contasMes, ganhoC);
 
-            const divId = nome.toLowerCase();
-            
-            // Atualiza métricas
-            document.getElementById(`metricas-${divId}`).innerHTML = `
-                <div class="bg-gray-50 p-2 rounded shadow text-center"><p class="text-xs text-gray-500">A Pagar</p><p class="font-bold text-red-600">${formatarMoeda(totalPagar)}</p></div>
-                <div class="bg-gray-50 p-2 rounded shadow text-center"><p class="text-xs text-gray-500">Pendente</p><p class="font-bold text-yellow-600">${formatarMoeda(totalPendente)}</p></div>
-            `;
-
-            // Atualiza Tabela
-            const tbody = document.getElementById(`tabela-${divId}`);
-            tbody.innerHTML = contasPessoa.map(c => `
-                <tr class="border-b"><td class="p-3">${c.descricao} <br><span class="text-xs text-gray-400">${c.categoria} - ${c.forma_pagamento}</span></td>
-                <td class="p-3 font-bold">R$ ${c.valor.toFixed(2)}</td><td class="p-3">${c.vencimento.split('-').reverse().join('/')}</td>
-                <td class="p-3"><span class="px-2 py-1 rounded text-xs ${c.status === 'Pago' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">${c.status}</span></td>
-                <td class="p-3"><button onclick="deletarConta('${c.id}')" class="text-red-500">🗑️</button></td></tr>
+            // 4. Atualiza Tabela de Investimentos
+            const tbInvest = document.getElementById('tabela-invest');
+            tbInvest.innerHTML = investMes.map(i => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3">${i.data.split('-').reverse().join('/')}</td>
+                    <td class="p-3">${i.responsavel}</td>
+                    <td class="p-3">${i.tipo_investimento} <br><span class="text-xs text-gray-500">${i.instituicao}</span></td>
+                    <td class="p-3 font-bold">${formatarMoeda(i.valor_aplicado)}</td>
+                    <td class="p-3 text-green-600">${formatarMoeda(i.ganho_mes)}</td>
+                    <td class="p-3 font-bold text-purple-600">${formatarMoeda(i.saldo_atual)}</td>
+                    <td class="p-3 text-center"><button onclick="deletarRegistro('investimentos', '${i.id}')" class="text-red-500 hover:text-red-700">🗑️</button></td>
+                </tr>
             `).join('');
         }
 
-        function gerarCamposFormulario(formId, pessoaDefault) {
+        function renderizarPessoa(nome, contasMes, ganhoPessoal) {
+            const contasPessoa = contasMes.filter(c => c.responsavel === nome);
+            const totalPagar = contasPessoa.reduce((acc, c) => acc + c.valor, 0);
+            const totalPendente = contasPessoa.filter(c => c.status !== 'Pago').reduce((acc, c) => acc + c.valor, 0);
+            const sobraPessoal = ganhoPessoal - totalPagar;
+
+            const divId = nome.toLowerCase();
+            
+            // Inputs de Ganhos
+            document.getElementById(`ganho-${divId}`).value = ganhoPessoal;
+            
+            // Métricas
+            document.getElementById(`metricas-${divId}`).innerHTML = `
+                <div class="bg-gray-50 p-3 rounded shadow text-center border-l-2 border-red-500"><p class="text-xs text-gray-500">Total a Pagar</p><p class="font-bold text-red-600">${formatarMoeda(totalPagar)}</p></div>
+                <div class="bg-gray-50 p-3 rounded shadow text-center border-l-2 border-yellow-500"><p class="text-xs text-gray-500">Total Pendente</p><p class="font-bold text-yellow-600">${formatarMoeda(totalPendente)}</p></div>
+                <div class="bg-gray-50 p-3 rounded shadow text-center border-l-2 border-blue-500"><p class="text-xs text-gray-500">Sobra (${nome})</p><p class="font-bold text-blue-600">${formatarMoeda(sobraPessoal)}</p></div>
+            `;
+
+            // Tabela
+            const tbody = document.getElementById(`tabela-${divId}`);
+            tbody.innerHTML = contasPessoa.map(c => `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3"><strong>${c.descricao}</strong> <br><span class="text-xs text-gray-500">${c.categoria} - ${c.forma_pagamento}</span></td>
+                    <td class="p-3 font-bold text-gray-700">R$ ${c.valor.toFixed(2)}</td>
+                    <td class="p-3 text-gray-600">${c.vencimento.split('-').reverse().join('/')}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded text-xs font-bold ${c.status === 'Pago' ? 'bg-green-100 text-green-700' : c.status === 'Pendente' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}">${c.status}</span></td>
+                    <td class="p-3 text-center"><button onclick="deletarRegistro('contas', '${c.id}')" class="text-red-500 hover:text-red-700">🗑️</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function gerarFormConta(formId, pessoaDefault) {
             const form = document.getElementById(formId);
             form.innerHTML = `
-                <input type="text" name="descricao" placeholder="Descrição" required class="w-full border p-2 rounded">
-                <div class="flex gap-2">
-                    <select name="categoria" class="w-1/2 border p-2 rounded">${categorias.map(c => `<option value="${c}">${c}</option>`).join('')}</select>
-                    <input type="number" name="valor" placeholder="Valor R$" step="0.01" required class="w-1/2 border p-2 rounded">
+                <input type="text" name="descricao" placeholder="Descrição da Conta" required class="w-full border p-2 rounded bg-gray-50">
+                <div class="grid grid-cols-2 gap-2">
+                    <select name="categoria" class="border p-2 rounded bg-gray-50">${categorias.map(c => `<option value="${c}">${c}</option>`).join('')}</select>
+                    <input type="number" name="valor" placeholder="Valor R$" step="0.01" required class="border p-2 rounded bg-gray-50">
                 </div>
-                <div class="flex gap-2">
-                    <input type="date" name="vencimento" required class="w-1/2 border p-2 rounded">
-                    <select name="status" class="w-1/2 border p-2 rounded">${statusList.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="date" name="vencimento" required class="border p-2 rounded bg-gray-50">
+                    <select name="status" class="border p-2 rounded bg-gray-50">${statusList.map(s => `<option value="${s}">${s}</option>`).join('')}</select>
                 </div>
-                <div class="flex gap-2">
-                    <select name="forma_pagamento" class="w-1/2 border p-2 rounded">${formasPagamento.map(f => `<option value="${f}">${f}</option>`).join('')}</select>
-                    <select name="responsavel" class="w-1/2 border p-2 rounded">
-                        <option value="Henrique" ${pessoaDefault==='Henrique'?'selected':''}>Henrique</option>
-                        <option value="Camila" ${pessoaDefault==='Camila'?'selected':''}>Camila</option>
-                        <option value="Casal">Dividir (Casal)</option>
+                <div class="grid grid-cols-2 gap-2">
+                    <select name="forma_pagamento" class="border p-2 rounded bg-gray-50">${formasPagamento.map(f => `<option value="${f}">${f}</option>`).join('')}</select>
+                    <select name="responsavel" class="border p-2 rounded bg-gray-50">
+                        <option value="Henrique" ${pessoaDefault === 'Henrique' ? 'selected' : ''}>Responsável: Henrique</option>
+                        <option value="Camila" ${pessoaDefault === 'Camila' ? 'selected' : ''}>Responsável: Camila</option>
+                        <option value="Casal">Dividir Metade (Casal)</option>
                     </select>
                 </div>
-                <button type="submit" class="w-full bg-green-600 text-white font-bold py-2 rounded">Salvar Conta</button>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700 transition">Salvar Conta</button>
             `;
         }
     </script>
