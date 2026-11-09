@@ -58,6 +58,14 @@
                     <span class="nav-icon">📈</span>
                     <span class="nav-label">Investimentos</span>
                 </button>
+                <button onclick="mudarAba('controle')" id="btn-controle" class="nav-btn">
+                    <span class="nav-icon">🎯</span>
+                    <span class="nav-label">Controle Ideal</span>
+                </button>
+                <button onclick="mudarAba('dividas')" id="btn-dividas" class="nav-btn">
+                    <span class="nav-icon">💳</span>
+                    <span class="nav-label">Dívidas</span>
+                </button>
             </nav>
 
             <!-- Status de Sincronização (Rodapé da Sidebar Desktop) -->
@@ -439,6 +447,129 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- ==================== ABA: CONTROLE IDEAL ==================== -->
+                <section id="controle" class="tab-content space-y-6">
+                    <div class="surface-card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <span class="kpi-label">Renda Total do Casal no Mês</span>
+                            <p id="ci-renda" class="kpi-value text-indigo-600 mt-1">R$ 0,00</p>
+                        </div>
+                        <p class="text-xs text-slate-500 max-w-md">Regra: Fixos até 50% • Variáveis até 30% • Lazer até 10% • Investimentos & Sonhos no mínimo 5% da renda.</p>
+                    </div>
+                    <div id="ci-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </section>
+
+                <!-- ==================== ABA: DÍVIDAS ==================== -->
+                <section id="dividas" class="tab-content space-y-6">
+                    <div class="surface-card overflow-hidden">
+                        <div class="p-4 sm:px-6 flex flex-wrap items-center justify-between gap-3 bg-slate-50/70 border-b border-slate-100">
+                            <div>
+                                <h3 class="font-bold text-slate-900">Mapa de Dívidas</h3>
+                                <p class="text-xs text-slate-500">Aba isolada: não afeta os cálculos das outras abas</p>
+                            </div>
+                            <button onclick="toggleForm('form-divida')" class="btn-primary">
+                                <span>➕</span>
+                                <span>Nova Dívida</span>
+                            </button>
+                        </div>
+                        <form id="form-divida" class="hidden p-5 sm:p-6 border-b border-slate-100 space-y-4" onsubmit="adicionarDivida(event)">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="sm:col-span-3">
+                                    <label class="form-label">Descrição da Dívida</label>
+                                    <input type="text" name="descricao" required placeholder="Ex: Empréstimo banco" class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">Data de Início</label>
+                                    <input type="date" name="data_inicio" required class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">Valor Inicial (R$)</label>
+                                    <input type="number" name="valor_inicial" step="0.01" min="0" required placeholder="0,00" class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">Valor Total (R$)</label>
+                                    <input type="number" name="valor_total" step="0.01" min="0" required placeholder="0,00" class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">Responsável</label>
+                                    <select name="responsavel" required class="form-input">
+                                        <option value="Henrique">Henrique</option>
+                                        <option value="Camila">Camila</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label">Status</label>
+                                    <select name="status" required class="form-input">
+                                        <option>Pendente</option><option selected>Pagando</option><option>Negociada</option><option>Caducar!</option><option>Paga</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-end">
+                                    <button type="submit" class="btn-primary w-full justify-center">Salvar Dívida</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div class="surface-card overflow-hidden">
+                            <div class="p-4 sm:px-6 flex flex-wrap items-center justify-between gap-3 bg-slate-50/70 border-b border-slate-100">
+                                <h3 class="font-bold text-slate-900">👨 Dívidas do Henrique</h3>
+                                <span id="div-qtd-henrique" class="badge badge-neutral">0 dívidas</span>
+                            </div>
+                            <div class="p-4 sm:p-6 space-y-4">
+                                <div class="kpi-card kpi-rose">
+                                    <span class="kpi-label">Total Acumulado</span>
+                                    <p id="div-total-henrique" class="kpi-value text-rose-600 mt-1">R$ 0,00</p>
+                                    <p id="div-inicial-henrique" class="kpi-subtext">Valor inicial somado: R$ 0,00</p>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm min-w-[560px]">
+                                        <thead>
+                                            <tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-100">
+                                                <th class="py-2 pr-3">Descrição</th>
+                                                <th class="py-2 pr-3">Início</th>
+                                                <th class="py-2 pr-3 text-right">Inicial</th>
+                                                <th class="py-2 pr-3 text-right">Total</th>
+                                                <th class="py-2 pr-3">Status</th>
+                                                <th class="py-2"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="div-tabela-henrique"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="surface-card overflow-hidden">
+                            <div class="p-4 sm:px-6 flex flex-wrap items-center justify-between gap-3 bg-slate-50/70 border-b border-slate-100">
+                                <h3 class="font-bold text-slate-900">👩 Dívidas da Camila</h3>
+                                <span id="div-qtd-camila" class="badge badge-neutral">0 dívidas</span>
+                            </div>
+                            <div class="p-4 sm:p-6 space-y-4">
+                                <div class="kpi-card kpi-rose">
+                                    <span class="kpi-label">Total Acumulado</span>
+                                    <p id="div-total-camila" class="kpi-value text-rose-600 mt-1">R$ 0,00</p>
+                                    <p id="div-inicial-camila" class="kpi-subtext">Valor inicial somado: R$ 0,00</p>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm min-w-[560px]">
+                                        <thead>
+                                            <tr class="text-left text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-100">
+                                                <th class="py-2 pr-3">Descrição</th>
+                                                <th class="py-2 pr-3">Início</th>
+                                                <th class="py-2 pr-3 text-right">Inicial</th>
+                                                <th class="py-2 pr-3 text-right">Total</th>
+                                                <th class="py-2 pr-3">Status</th>
+                                                <th class="py-2"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="div-tabela-camila"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
 
             </div>
         </main>

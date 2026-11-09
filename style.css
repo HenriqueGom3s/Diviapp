@@ -419,3 +419,11 @@ body {
     color: #475569;
     border: 1px solid #e2e8f0;
 }
+/* ==========================================================================
+   NAVEGAÇÃO MOBILE COM 6 ABAS (rolagem horizontal)
+   ========================================================================== */
+@media (max-width: 1023px) {
+    .nav-links { overflow-x: auto; scrollbar-width: none; }
+    .nav-links::-webkit-scrollbar { display: none; }
+    .nav-btn { flex: 0 0 auto; min-width: 4.5rem; }
+}

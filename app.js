@@ -90,6 +90,7 @@ const CONTAS_PLANILHA = [
 let contas = [];
 let ganhos = [];
 let investimentos = [];
+let dividas = [];
 let grafico = null;
 let abaAtual = 'dashboard';
 
@@ -110,6 +111,14 @@ const infoAbas = {
     investimentos: {
         titulo: '📈 Hub de Investimentos',
         subtitulo: 'Acompanhamento de aportes, rendimentos mensais e evolução patrimonial'
+    },
+    controle: {
+        titulo: '🎯 Controle Ideal',
+        subtitulo: 'Compare os gastos do mês com a distribuição ideal da renda do casal'
+    },
+    dividas: {
+        titulo: '💳 Dívidas',
+        subtitulo: 'Mapeamento de passivos do Henrique e da Camila (não afeta as outras abas)'
     }
 };
 
@@ -132,6 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Carrega os dados iniciais e verifica se precisa popular com a planilha
     await carregarDados(true);
+    await carregarDividas();
 
     // Ativa escuta em Tempo Real no Supabase (Postgres Changes)
     iniciarRealtimeSupabase();
@@ -144,6 +154,7 @@ function iniciarRealtimeSupabase() {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'contas' }, () => carregarDados(false))
             .on('postgres_changes', { event: '*', schema: 'public', table: 'ganhos' }, () => carregarDados(false))
             .on('postgres_changes', { event: '*', schema: 'public', table: 'investimentos' }, () => carregarDados(false))
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'dividas' }, () => carregarDividas())
             .subscribe((status) => {
                 const dot = document.getElementById('status-dot');
                 const txt = document.getElementById('status-text');
@@ -505,6 +516,9 @@ function atualizarTelas(contasMes, investMes, ganhosMes) {
 
     // 6. Renderiza Hub de Investimentos
     renderizarInvestimentos(investMes, totalInvestido, totalGanhoInvest, totalSaldoInvest);
+
+    // 7. Renderiza Controle Ideal
+    renderizarControleIdeal(contasMes, totalEntrada, totalInvestido);
 }
 
 function renderizarGraficoCategorias(contasMes) {
@@ -777,4 +791,165 @@ function atualizarAvisoCasal(sufixo) {
     } else {
         aviso.classList.add('hidden');
     }
+}
+
+// ==========================================================================
+// CONTROLE IDEAL (REGRA 50 / 30 / 10 / 5)
+// ==========================================================================
+
+const PILARES_IDEAL = [
+    { chave: 'fixos', titulo: 'Gastos Fixos', icone: '🏠', perc: 0.50, tipo: 'teto',
+      categorias: ['Moradia', 'Mercado', 'Transporte', 'Saúde', 'Telefone', 'Energia', 'Água'] },
+    { chave: 'variaveis', titulo: 'Gastos Variáveis', icone: '💳', perc: 0.30, tipo: 'teto',
+      categorias: ['Cartão de crédito', 'Financiamento'] },
+    { chave: 'lazer', titulo: 'Lazer', icone: '🎉', perc: 0.10, tipo: 'teto', categorias: ['Lazer'] },
+    { chave: 'invest', titulo: 'Investimentos & Sonhos', icone: '🚀', perc: 0.05, tipo: 'meta', categorias: [] }
+];
+
+function renderizarControleIdeal(contasMes, rendaTotal, totalInvestido) {
+    const elRenda = document.getElementById('ci-renda');
+    const container = document.getElementById('ci-cards');
+    if (!elRenda || !container) return;
+    elRenda.innerText = formatarMoeda(rendaTotal);
+
+    container.innerHTML = PILARES_IDEAL.map(p => {
+        const gasto = p.tipo === 'meta'
+            ? totalInvestido
+            : contasMes.filter(c => p.categorias.includes(c.categoria)).reduce((a, c) => a + Number(c.valor || 0), 0);
+        const ideal = rendaTotal * p.perc;
+        // Teto: resultado positivo = sobrou dentro do limite. Meta: positivo = superou a meta.
+        const resultado = p.tipo === 'meta' ? gasto - ideal : ideal - gasto;
+        const ok = p.tipo === 'meta' ? gasto >= ideal && (rendaTotal > 0 || gasto > 0) : gasto <= ideal;
+        const percReal = rendaTotal > 0 ? (gasto / rendaTotal) * 100 : 0;
+        const sinal = resultado >= 0 ? '+' : '-';
+        const cor = ok ? 'emerald' : 'rose';
+        const alerta = ok
+            ? (p.tipo === 'meta' ? '✅ Meta mínima atingida' : '✅ Dentro do limite ideal')
+            : (p.tipo === 'meta' ? '⚠️ Abaixo da meta mínima de 5%' : `⚠️ Alerta: acima do teto de ${p.perc * 100}%`);
+        const barra = rendaTotal > 0 ? Math.min(100, (gasto / (ideal || 1)) * 100) : 0;
+        return `
+        <div class="surface-card p-5 border-l-4 ${ok ? 'border-l-emerald-500' : 'border-l-rose-500'}">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">${p.icone}</span>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">${p.titulo}</h4>
+                        <p class="text-[11px] text-slate-400">${p.tipo === 'meta' ? 'Meta mínima' : 'Limite máximo'}: ${p.perc * 100}% da renda</p>
+                    </div>
+                </div>
+                <span class="text-xs font-bold px-2 py-1 rounded-lg bg-${cor}-50 text-${cor}-600">${percReal.toFixed(1).replace('.', ',')}%</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-xs mb-3">
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <p class="text-slate-400 font-semibold">Gasto mês</p>
+                    <p class="font-bold text-slate-800 mt-0.5">${formatarMoeda(gasto)}</p>
+                </div>
+                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
+                    <p class="text-slate-400 font-semibold">Gasto ideal mês</p>
+                    <p class="font-bold text-slate-800 mt-0.5">${formatarMoeda(ideal)}</p>
+                </div>
+                <div class="p-2.5 rounded-xl bg-${cor}-50 border border-${cor}-200">
+                    <p class="text-${cor}-600 font-semibold">Resultado mês</p>
+                    <p class="font-extrabold text-${cor}-600 mt-0.5">${sinal} ${formatarMoeda(Math.abs(resultado))}</p>
+                </div>
+            </div>
+            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden mb-2">
+                <div class="bg-${cor}-500 h-full rounded-full transition-all duration-500" style="width:${barra}%"></div>
+            </div>
+            <p class="text-xs font-bold text-${cor}-600">${alerta}</p>
+        </div>`;
+    }).join('');
+}
+
+// ==========================================================================
+// DÍVIDAS (ABA ISOLADA — NÃO IMPACTA OUTROS CÁLCULOS)
+// ==========================================================================
+
+const STATUS_DIVIDA = ['Pendente', 'Pagando', 'Negociada', 'Caducar!', 'Paga'];
+const COR_STATUS_DIVIDA = {
+    'Paga': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'Negociada': 'bg-sky-50 text-sky-700 border-sky-200',
+    'Pagando': 'bg-amber-50 text-amber-700 border-amber-200',
+    'Caducar!': 'bg-slate-100 text-slate-600 border-slate-300',
+    'Pendente': 'bg-rose-50 text-rose-700 border-rose-200'
+};
+
+const escaparHTML = (t) => String(t ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+async function carregarDividas() {
+    const { data, error } = await supabaseClient.from('dividas').select('*').order('data_inicio', { ascending: false });
+    if (error) {
+        console.error('Erro ao carregar dívidas:', error);
+        return;
+    }
+    dividas = data || [];
+    renderizarDividas();
+}
+
+async function adicionarDivida(e) {
+    e.preventDefault();
+    const form = e.target;
+    const fd = new FormData(form);
+    const { error } = await supabaseClient.from('dividas').insert([{
+        descricao: fd.get('descricao').trim(),
+        data_inicio: fd.get('data_inicio'),
+        valor_inicial: parseFloat(fd.get('valor_inicial')) || 0,
+        valor_total: parseFloat(fd.get('valor_total')) || 0,
+        responsavel: fd.get('responsavel'),
+        status: fd.get('status')
+    }]);
+    if (error) return mostrarToast('Erro ao salvar dívida: ' + error.message, 'erro');
+    mostrarToast('Dívida cadastrada com sucesso!');
+    form.reset();
+    form.classList.add('hidden');
+    carregarDividas();
+}
+
+async function alterarStatusDivida(id, novoStatus) {
+    const { error } = await supabaseClient.from('dividas').update({ status: novoStatus }).eq('id', id);
+    if (error) return mostrarToast('Erro ao atualizar status: ' + error.message, 'erro');
+    mostrarToast(`Status atualizado para "${novoStatus}"`);
+    carregarDividas();
+}
+
+async function deletarDivida(id) {
+    if (!confirm('Tem certeza que deseja excluir esta dívida permanentemente?')) return;
+    const { error } = await supabaseClient.from('dividas').delete().eq('id', id);
+    if (error) return mostrarToast('Erro ao excluir: ' + error.message, 'erro');
+    mostrarToast('Dívida removida.', 'aviso');
+    carregarDividas();
+}
+
+function renderizarDividas() {
+    ['Henrique', 'Camila'].forEach(nome => {
+        const p = nome.toLowerCase();
+        const lista = dividas.filter(d => d.responsavel === nome);
+        const total = lista.reduce((a, d) => a + Number(d.valor_total || 0), 0);
+        const inicial = lista.reduce((a, d) => a + Number(d.valor_inicial || 0), 0);
+
+        document.getElementById(`div-total-${p}`).innerText = formatarMoeda(total);
+        document.getElementById(`div-inicial-${p}`).innerText = `Valor inicial somado: ${formatarMoeda(inicial)}`;
+        document.getElementById(`div-qtd-${p}`).innerText = `${lista.length} ${lista.length === 1 ? 'dívida' : 'dívidas'}`;
+
+        const tbody = document.getElementById(`div-tabela-${p}`);
+        if (lista.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-xs text-slate-400">Nenhuma dívida cadastrada.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = lista.map(d => `
+            <tr class="border-b border-slate-100 last:border-0">
+                <td class="py-2.5 pr-3 font-semibold text-slate-800">${escaparHTML(d.descricao)}</td>
+                <td class="py-2.5 pr-3 text-slate-500 whitespace-nowrap">${formatarDataBR(d.data_inicio)}</td>
+                <td class="py-2.5 pr-3 text-right text-slate-500 whitespace-nowrap">${formatarMoeda(d.valor_inicial)}</td>
+                <td class="py-2.5 pr-3 text-right font-bold text-slate-800 whitespace-nowrap">${formatarMoeda(d.valor_total)}</td>
+                <td class="py-2.5 pr-3">
+                    <select onchange="alterarStatusDivida('${d.id}', this.value)" class="text-xs font-bold rounded-lg border px-2 py-1 cursor-pointer ${COR_STATUS_DIVIDA[d.status] || COR_STATUS_DIVIDA.Pendente}">
+                        ${STATUS_DIVIDA.map(s => `<option value="${s}" ${s === d.status ? 'selected' : ''}>${s}</option>`).join('')}
+                    </select>
+                </td>
+                <td class="py-2.5 text-right">
+                    <button onclick="deletarDivida('${d.id}')" title="Excluir dívida" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition">🗑️</button>
+                </td>
+            </tr>`).join('');
+    });
 }
