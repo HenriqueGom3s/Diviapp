@@ -101,15 +101,15 @@ const infoAbas = {
         subtitulo: 'Visão consolidada das receitas, despesas e investimentos do mês'
     },
     henrique: {
-        titulo: '👨 Contas Henrique',
+        titulo: '<img src="assets/avatar-henrique.png" alt="Henrique" class="w-5 h-5 rounded-full object-cover inline-block align-middle mr-1.5">Contas Henrique',
         subtitulo: 'Gestão de renda individual, métricas e lançamentos do Henrique'
     },
     camila: {
-        titulo: '👩 Contas Camila',
+        titulo: '<img src="assets/avatar-camila.png" alt="Camila" class="w-5 h-5 rounded-full object-cover inline-block align-middle mr-1.5">Contas Camila',
         subtitulo: 'Gestão de renda individual, métricas e lançamentos da Camila'
     },
     investimentos: {
-        titulo: '📈 Hub de Investimentos',
+        titulo: '<img src="assets/icone-investimentos.png" alt="Investimentos" class="w-5 h-5 rounded-full object-cover inline-block align-middle mr-1.5">Hub de Investimentos',
         subtitulo: 'Acompanhamento de aportes, rendimentos mensais e evolução patrimonial'
     },
     controle: {
@@ -183,7 +183,7 @@ function mudarAba(abaId) {
 
     // Atualiza cabeçalho
     if (infoAbas[abaId]) {
-        document.getElementById('page-title').innerText = infoAbas[abaId].titulo;
+        document.getElementById('page-title').innerHTML = infoAbas[abaId].titulo;
         document.getElementById('page-subtitle').innerText = infoAbas[abaId].subtitulo;
     }
 
@@ -661,6 +661,7 @@ function renderizarPessoa(nome, contasMes, ganhoPessoal) {
                     </button>
                 </td>
                 <td class="text-right">
+                    <button onclick="abrirModalEditarConta('${c.id}')" title="Editar conta" class="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition">✏️</button>
                     <button onclick="deletarRegistro('contas', '${c.id}')" title="Excluir conta" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition">
                         🗑️
                     </button>
@@ -953,3 +954,55 @@ function renderizarDividas() {
             </tr>`).join('');
     });
 }
+
+
+// ==========================================================================
+// EDIÇÃO DE CONTAS
+// ==========================================================================
+
+function abrirModalEditarConta(id) {
+    const c = contas.find(x => String(x.id) === String(id));
+    if (!c) { mostrarToast('Conta não encontrada.', 'erro'); return; }
+    const opts = (lista, atual) => {
+        const l = lista.includes(atual) || !atual ? lista : [atual, ...lista];
+        return l.map(v => `<option value="${v}" ${v === atual ? 'selected' : ''}>${v}</option>`).join('');
+    };
+    document.getElementById('edit-id').value = c.id;
+    document.getElementById('edit-descricao').value = c.descricao || '';
+    document.getElementById('edit-categoria').innerHTML = opts(categorias, c.categoria);
+    document.getElementById('edit-valor').value = Number(c.valor || 0).toFixed(2);
+    document.getElementById('edit-vencimento').value = (c.vencimento || '').slice(0, 10);
+    document.getElementById('edit-status').innerHTML = opts(statusList, c.status);
+    document.getElementById('edit-forma').innerHTML = opts(formasPagamento, c.forma_pagamento || 'Pix');
+    document.getElementById('edit-responsavel').value = c.responsavel || 'Henrique';
+    document.getElementById('modal-editar-conta').classList.remove('hidden');
+}
+
+function fecharModalEditarConta() {
+    document.getElementById('modal-editar-conta').classList.add('hidden');
+}
+
+async function salvarEdicaoConta(event) {
+    event.preventDefault();
+    const contaId = document.getElementById('edit-id').value;
+    const dados = {
+        descricao: document.getElementById('edit-descricao').value.trim(),
+        categoria: document.getElementById('edit-categoria').value,
+        valor: Number(parseFloat(document.getElementById('edit-valor').value).toFixed(2)),
+        vencimento: document.getElementById('edit-vencimento').value,
+        status: document.getElementById('edit-status').value,
+        forma_pagamento: document.getElementById('edit-forma').value,
+        responsavel: document.getElementById('edit-responsavel').value
+    };
+    const { error } = await supabaseClient.from('contas').update(dados).eq('id', contaId);
+    if (error) {
+        console.error(error);
+        mostrarToast('Erro ao atualizar a conta. Tente novamente.', 'erro');
+        return;
+    }
+    fecharModalEditarConta();
+    mostrarToast('Conta atualizada com sucesso!');
+    carregarDados(false);
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharModalEditarConta(); });

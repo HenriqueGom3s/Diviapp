@@ -30,9 +30,7 @@
             <!-- Topo da Sidebar (Visível no Desktop) -->
             <div class="hidden lg:flex items-center justify-between px-6 py-6 border-b border-slate-100">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-indigo-200 text-lg font-extrabold">
-                        💍
-                    </div>
+                    <img src="assets/logo-diviapp.png" alt="Diviapp" class="w-10 h-10 rounded-full object-cover border border-amber-300 shadow-sm">
                     <div>
                         <h1 class="text-xl font-extrabold tracking-tight text-slate-900">Diviapp</h1>
                         <p class="text-xs font-medium text-slate-400">Henrique & Camila</p>
@@ -47,15 +45,15 @@
                     <span class="nav-label">Dashboard</span>
                 </button>
                 <button onclick="mudarAba('henrique')" id="btn-henrique" class="nav-btn">
-                    <span class="nav-icon">👨</span>
+                    <span class="nav-icon"><img src="assets/avatar-henrique.png" alt="Henrique" class="w-5 h-5 rounded-full object-cover inline-block align-middle mr-1.5"></span>
                     <span class="nav-label">Henrique</span>
                 </button>
                 <button onclick="mudarAba('camila')" id="btn-camila" class="nav-btn">
-                    <span class="nav-icon">👩</span>
+                    <span class="nav-icon"><img src="assets/avatar-camila.png" alt="Camila" class="w-5 h-5 rounded-full object-cover inline-block align-middle mr-1.5"></span>
                     <span class="nav-label">Camila</span>
                 </button>
                 <button onclick="mudarAba('investimentos')" id="btn-investimentos" class="nav-btn">
-                    <span class="nav-icon">📈</span>
+                    <span class="nav-icon"><img src="assets/icone-investimentos.png" alt="Investimentos" class="w-5 h-5 rounded-full object-cover inline-block align-middle mr-1.5"></span>
                     <span class="nav-label">Investimentos</span>
                 </button>
                 <button onclick="mudarAba('controle')" id="btn-controle" class="nav-btn">
@@ -89,7 +87,7 @@
                     
                     <!-- Título Dinâmico da Tela -->
                     <div class="flex items-center gap-3">
-                        <div class="lg:hidden w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm">💍</div>
+                        <img src="assets/logo-diviapp.png" alt="Diviapp" class="lg:hidden w-10 h-10 rounded-full object-cover border border-amber-300 shadow-sm">
                         <div>
                             <h2 id="page-title" class="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight">Dashboard do Casal</h2>
                             <p id="page-subtitle" class="text-xs sm:text-sm text-slate-500 hidden sm:block">Visão consolidada das receitas, despesas e investimentos do mês</p>
@@ -186,7 +184,7 @@
                                 <!-- Resumo Henrique -->
                                 <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70 mb-4">
                                     <div class="flex items-center justify-between mb-2">
-                                        <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5">👨 Henrique</span>
+                                        <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5"><img src="assets/avatar-henrique.png" alt="Henrique" class="w-5 h-5 rounded-full object-cover inline-block align-middle mr-1.5">Henrique</span>
                                         <span id="dash-resumo-h-sobra" class="text-xs font-bold text-emerald-600">Sobra: R$ 0,00</span>
                                     </div>
                                     <div class="flex justify-between text-xs text-slate-500 mb-1.5">
@@ -201,7 +199,7 @@
                                 <!-- Resumo Camila -->
                                 <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
                                     <div class="flex items-center justify-between mb-2">
-                                        <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5">👩 Camila</span>
+                                        <span class="font-bold text-sm text-slate-800 flex items-center gap-1.5"><img src="assets/avatar-camila.png" alt="Camila" class="w-5 h-5 rounded-full object-cover inline-block align-middle mr-1.5">Camila</span>
                                         <span id="dash-resumo-c-sobra" class="text-xs font-bold text-emerald-600">Sobra: R$ 0,00</span>
                                     </div>
                                     <div class="flex justify-between text-xs text-slate-500 mb-1.5">
@@ -513,7 +511,7 @@
                     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                         <div class="surface-card overflow-hidden">
                             <div class="p-4 sm:px-6 flex flex-wrap items-center justify-between gap-3 bg-slate-50/70 border-b border-slate-100">
-                                <h3 class="font-bold text-slate-900">👨 Dívidas do Henrique</h3>
+                                <h3 class="font-bold text-slate-900"><img src="assets/avatar-henrique.png" alt="Henrique" class="w-5 h-5 rounded-full object-cover inline-block align-middle mr-1.5">Dívidas do Henrique</h3>
                                 <span id="div-qtd-henrique" class="badge badge-neutral">0 dívidas</span>
                             </div>
                             <div class="p-4 sm:p-6 space-y-4">
@@ -541,7 +539,7 @@
                         </div>
                         <div class="surface-card overflow-hidden">
                             <div class="p-4 sm:px-6 flex flex-wrap items-center justify-between gap-3 bg-slate-50/70 border-b border-slate-100">
-                                <h3 class="font-bold text-slate-900">👩 Dívidas da Camila</h3>
+                                <h3 class="font-bold text-slate-900"><img src="assets/avatar-camila.png" alt="Camila" class="w-5 h-5 rounded-full object-cover inline-block align-middle mr-1.5">Dívidas da Camila</h3>
                                 <span id="div-qtd-camila" class="badge badge-neutral">0 dívidas</span>
                             </div>
                             <div class="p-4 sm:p-6 space-y-4">
@@ -573,6 +571,30 @@
 
             </div>
         </main>
+    </div>
+
+    <!-- Modal de Edição de Conta -->
+    <div id="modal-editar-conta" class="hidden fixed inset-0 z-50 bg-slate-900/50 flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="if(event.target===this)fecharModalEditarConta()">
+        <form id="form-editar-conta" onsubmit="salvarEdicaoConta(event)" class="bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl shadow-xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-lg text-slate-900">✏️ Editar conta</h3>
+                <button type="button" onclick="fecharModalEditarConta()" class="p-2 rounded-lg text-slate-400 hover:bg-slate-100" aria-label="Fechar">✕</button>
+            </div>
+            <input type="hidden" id="edit-id">
+            <label class="block text-sm font-semibold text-slate-700">Descrição<input id="edit-descricao" type="text" required class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"></label>
+            <label class="block text-sm font-semibold text-slate-700">Categoria<select id="edit-categoria" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"></select></label>
+            <div class="grid grid-cols-2 gap-3">
+                <label class="block text-sm font-semibold text-slate-700">Valor (R$)<input id="edit-valor" type="number" step="0.01" min="0" required class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"></label>
+                <label class="block text-sm font-semibold text-slate-700">Vencimento<input id="edit-vencimento" type="date" required class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"></label>
+                <label class="block text-sm font-semibold text-slate-700">Status<select id="edit-status" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"></select></label>
+                <label class="block text-sm font-semibold text-slate-700">Forma de pagamento<select id="edit-forma" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"></select></label>
+            </div>
+            <label class="block text-sm font-semibold text-slate-700">Responsável<select id="edit-responsavel" class="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"><option value="Henrique">Henrique</option><option value="Camila">Camila</option></select></label>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="fecharModalEditarConta()" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50">Cancelar</button>
+                <button type="submit" class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700">Salvar alterações</button>
+            </div>
+        </form>
     </div>
 
     <!-- Script Principal da Aplicação -->
